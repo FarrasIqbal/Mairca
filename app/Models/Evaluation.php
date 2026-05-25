@@ -9,7 +9,13 @@ class Evaluation extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['candidate_id', 'criteria_id', 'user_id', 'score'];
+    protected $fillable = [
+        'candidate_id',
+        'criteria_id',
+        'user_id',
+        'score',
+        'interview_type',
+    ];
 
     public function candidate()
     {

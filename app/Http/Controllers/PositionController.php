@@ -13,7 +13,7 @@ class PositionController extends Controller
 {
     public function index()
     {
-        $positions = Position::latest()->paginate(10);
+        $positions = Position::withCount(['criteria', 'candidates'])->latest()->paginate(10);
         return view('positions.index', compact('positions'));
     }
 

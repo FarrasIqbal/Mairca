@@ -11,7 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->alias([
+            'hr-only' => \App\Http\Middleware\HrOnly::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

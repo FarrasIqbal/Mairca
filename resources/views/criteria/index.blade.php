@@ -1,203 +1,222 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center" x-data>
-            <div class="flex items-center space-x-3">
-                <a href="{{ route('positions.index') }}" class="text-gray-500 hover:text-gray-700 transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                </a>
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                    Kriteria: <span class="text-primary-600">{{ $position->name }}</span>
-                </h2>
-            </div>
-            <button @click="$dispatch('open-create-modal')" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-150 shadow-sm">
-                + Tambah Kriteria
-            </button>
-        </div>
-    </x-slot>
+<x-app-layout title="Kriteria: {{ $position->name }}" subtitle="Atur parameter dan bobot penilaian untuk posisi ini">
 
-    <div class="py-12"
-        x-data="{ 
-            showCreateModal: false, 
-            showEditModal: false, 
-            editFormAction: '', 
-            editName: '', 
-            editType: 'benefit', 
+    <div class="page-fade space-y-6"
+        x-data="{
+            showCreateModal: false,
+            showEditModal: false,
+            editFormAction: '',
+            editName: '',
+            editType: 'benefit',
             editWeight: '0.00'
-        }"
-        @open-create-modal.window="showCreateModal = true"
-        @open-edit-modal.window="showEditModal = true; editFormAction = $event.detail.action; editName = $event.detail.name; editType = $event.detail.type; editWeight = $event.detail.weight">
-        
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            
-            @if(session('success'))
-                <div class="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl relative">
-                    {{ session('success') }}
-                </div>
-            @endif
-            @if(session('error'))
-                <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl relative">
-                    {{ session('error') }}
-                </div>
-            @endif
+        }">
 
-            <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                    <h4 class="text-sm font-semibold text-gray-500 uppercase tracking-wider">Status Akumulasi Bobot Posisi</h4>
-                    <p class="text-xs text-gray-400 mt-1">Sesuai aturan MAIRCA, total bobot kriteria pada satu posisi wajib bernilai mutlak 1.00 (100%).</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <span class="text-xs text-gray-400 block">Total Saat Ini</span>
-                        <span class="text-2xl font-black {{ $totalWeight == 1.0 ? 'text-green-600' : 'text-amber-500' }}">
-                            {{ number_format($totalWeight, 2) }} / 1.00
-                        </span>
+        {{-- Back Link --}}
+        <div>
+            <a href="{{ route('positions.index') }}" class="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-indigo-600 transition-colors group">
+                <svg class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Kembali ke Daftar Posisi
+            </a>
+        </div>
+
+        {{-- Weight Status Card --}}
+        <div class="data-card">
+            <div class="px-6 py-5">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="space-y-1">
+                        <h4 class="text-sm font-semibold text-slate-800">Status Akumulasi Bobot</h4>
+                        <p class="text-xs text-slate-500">Sesuai aturan MAIRCA, total bobot kriteria pada satu posisi wajib bernilai mutlak <strong>1.00</strong> (100%).</p>
                     </div>
-                    <div>
+                    <div class="flex items-center gap-4 flex-shrink-0">
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 block">Total Saat Ini</span>
+                            <span class="text-2xl font-black {{ $totalWeight == 1.0 ? 'text-emerald-600' : 'text-amber-500' }}">
+                                {{ number_format($totalWeight, 2) }} / 1.00
+                            </span>
+                        </div>
                         @if($totalWeight == 1.0)
-                            <span class="px-4 py-2 inline-flex text-xs font-bold rounded-xl bg-green-50 text-green-700 border border-green-200 uppercase">✓ Struktur Valid</span>
+                            <span class="badge badge-green">✓ Valid</span>
                         @else
-                            <span class="px-4 py-2 inline-flex text-xs font-bold rounded-xl bg-amber-50 text-amber-700 border border-amber-200 uppercase">⚠ Belum Valid</span>
+                            <span class="badge badge-amber">⚠ Belum Valid</span>
                         @endif
                     </div>
                 </div>
-            </div>
-
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl border border-gray-100">
-                <div class="p-6 text-gray-900">
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Kriteria</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bobot Preferensi</th>
-                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                @forelse ($criteria as $index => $item)
-                                    <tr class="hover:bg-gray-50 transition duration-150">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-600">
-                                            C{{ $index + 1 }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $item->name }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($item->type === 'benefit')
-                                                <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-blue-50 text-blue-700 border border-blue-100 uppercase">Benefit</span>
-                                            @else
-                                                <span class="px-2.5 py-1 text-xs font-semibold rounded-md bg-orange-50 text-orange-700 border border-orange-100 uppercase">Cost</span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                                            {{ $item->weight }} ({{ $item->weight * 100 }}%)
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                                            <button @click="$dispatch('open-edit-modal', { 
-                                                action: '{{ route('positions.criteria.update', [$position->id, $item->id]) }}', 
-                                                name: '{{ addslashes($item->name) }}', 
-                                                type: '{{ $item->type }}', 
-                                                weight: '{{ $item->weight }}' 
-                                            })" class="text-indigo-600 hover:text-indigo-900 font-medium">Edit</button>
-                                            
-                                            <form action="{{ route('positions.criteria.destroy', [$position->id, $item->id]) }}" method="POST" class="inline-block" onsubmit="return confirm('Hapus kriteria ini? Nilai matriks pelamar yang tersimpan juga akan hilang.');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900 font-medium">Hapus</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="5" class="px-6 py-10 text-sm text-gray-500 text-center">
-                                            Belum ada kriteria penilaian untuk posisi ini.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                {{-- Progress Bar --}}
+                <div class="mt-4">
+                    <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                        <div class="h-2.5 rounded-full transition-all duration-500 {{ $totalWeight == 1.0 ? 'bg-emerald-500' : ($totalWeight > 1.0 ? 'bg-red-500' : 'bg-amber-400') }}"
+                             style="width: {{ min($totalWeight * 100, 100) }}%"></div>
+                    </div>
+                    <div class="flex justify-between mt-1.5">
+                        <span class="text-[11px] text-slate-400">0%</span>
+                        <span class="text-[11px] font-medium {{ $totalWeight == 1.0 ? 'text-emerald-600' : 'text-slate-400' }}">{{ number_format($totalWeight * 100, 0) }}%</span>
+                        <span class="text-[11px] text-slate-400">100%</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div x-cloak x-show="showCreateModal" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="showCreateModal" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showCreateModal = false"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                
-                <div x-show="showCreateModal" x-transition.scale.origin.bottom class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <form action="{{ route('positions.criteria.store', $position->id) }}" method="POST">
-                        @csrf
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <h3 class="text-lg font-medium text-gray-900">Tambah Parameter Kriteria</h3>
-                            <div class="mt-4 space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nama Kriteria</label>
-                                    <input type="text" name="name" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="Contoh: Portofolio Coding">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Tipe Parameter</label>
-                                    <select name="type" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                                        <option value="benefit">Benefit (Semakin tinggi semakin bagus)</option>
-                                        <option value="cost">Cost (Semakin rendah semakin bagus)</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Bobot Preferensi (Desimal)</label>
-                                    <input type="number" name="weight" step="0.01" min="0.01" max="1.00" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="Contoh: 0.25">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-2xl">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-lg shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Simpan</button>
-                            <button type="button" @click="showCreateModal = false" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Batal</button>
-                        </div>
-                    </form>
-                </div>
+        {{-- Criteria Table --}}
+        <div class="data-card">
+            <div class="card-header">
+                <h3 class="card-title">Daftar Kriteria Penilaian</h3>
+                <button @click="showCreateModal = true" class="btn-primary">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    Tambah Kriteria
+                </button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama Kriteria</th>
+                            <th>Tipe</th>
+                            <th>Bobot</th>
+                            <th class="text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($criteria as $index => $item)
+                            <tr>
+                                <td>
+                                    <span class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-xs font-bold text-indigo-700" style="background: linear-gradient(135deg, #eef2ff, #e0e7ff);">
+                                        C{{ $index + 1 }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="font-medium text-slate-800">{{ $item->name }}</span>
+                                </td>
+                                <td>
+                                    @if($item->type === 'benefit')
+                                        <span class="badge badge-blue">Benefit</span>
+                                    @else
+                                        <span class="badge" style="background-color: #fff7ed; color: #c2410c; border: 1px solid #fed7aa;">Cost</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="font-mono text-sm text-slate-700">{{ number_format($item->weight, 2) }}</span>
+                                    <span class="text-xs text-slate-400 ml-1">({{ number_format($item->weight * 100, 0) }}%)</span>
+                                </td>
+                                <td class="text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <button @click="showEditModal = true; editFormAction = '{{ route('positions.criteria.update', [$position->id, $item->id]) }}'; editName = '{{ addslashes($item->name) }}'; editType = '{{ $item->type }}'; editWeight = '{{ $item->weight }}'"
+                                                class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                            Edit
+                                        </button>
+                                        <form action="{{ route('positions.criteria.destroy', [$position->id, $item->id]) }}" method="POST" class="inline" onsubmit="return confirm('Hapus kriteria ini? Nilai matriks pelamar yang tersimpan juga akan hilang.');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center">
+                                    <div class="py-8">
+                                        <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                                        <p class="text-sm text-slate-500">Belum ada kriteria penilaian untuk posisi ini.</p>
+                                        <button @click="showCreateModal = true" class="mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium">+ Tambah kriteria pertama</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <div x-cloak x-show="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="showEditModal" x-transition.opacity class="fixed inset-0 bg-gray-500 bg-opacity-75" @click="showEditModal = false"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                
-                <div x-show="showEditModal" x-transition.scale.origin.bottom class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <form x-bind:action="editFormAction" method="POST">
-                        @csrf
-                        @dynamic
-                        @method('PUT')
-                        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                            <h3 class="text-lg font-medium text-gray-900">Ubah Parameter Kriteria</h3>
-                            <div class="mt-4 space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nama Kriteria</label>
-                                    <input type="text" name="name" x-model="editName" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Tipe Parameter</label>
-                                    <select name="type" x-model="editType" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                                        <option value="benefit">Benefit</option>
-                                        <option value="cost">Cost</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Bobot Preferensi</label>
-                                    <input type="number" name="weight" step="0.01" min="0.01" max="1.00" x-model="editWeight" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                                </div>
-                            </div>
+        {{-- Create Modal --}}
+        <div x-cloak x-show="showCreateModal" class="modal-overlay" @click.self="showCreateModal = false">
+            <div x-show="showCreateModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="modal-box w-full max-w-lg" @click.stop>
+                <form action="{{ route('positions.criteria.store', $position->id) }}" method="POST">
+                    @csrf
+                    <div class="px-6 py-5 border-b border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-slate-800">Tambah Kriteria Baru</h3>
+                            <button type="button" @click="showCreateModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
                         </div>
-                        <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse rounded-b-2xl">
-                            <button type="submit" class="w-full inline-flex justify-center rounded-lg shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Update</button>
-                            <button type="button" @click="showEditModal = false" class="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">Batal</button>
+                    </div>
+                    <div class="px-6 py-5 space-y-4">
+                        <div>
+                            <label class="form-label">Nama Kriteria</label>
+                            <input type="text" name="name" required class="form-input w-full" placeholder="Contoh: Portofolio Coding">
                         </div>
-                    </form>
-                </div>
+                        <div>
+                            <label class="form-label">Tipe Parameter</label>
+                            <select name="type" required class="form-input w-full">
+                                <option value="benefit">Benefit (Semakin tinggi semakin bagus)</option>
+                                <option value="cost">Cost (Semakin rendah semakin bagus)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Bobot Preferensi (Desimal)</label>
+                            <input type="number" name="weight" step="0.01" min="0.01" max="1.00" required class="form-input w-full" placeholder="Contoh: 0.25">
+                            <p class="text-xs text-slate-400 mt-1">Masukkan nilai antara 0.01 — 1.00</p>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                        <button type="button" @click="showCreateModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Simpan Kriteria
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- Edit Modal --}}
+        <div x-cloak x-show="showEditModal" class="modal-overlay" @click.self="showEditModal = false">
+            <div x-show="showEditModal" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="modal-box w-full max-w-lg" @click.stop>
+                <form x-bind:action="editFormAction" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="px-6 py-5 border-b border-slate-100">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-slate-800">Ubah Kriteria</h3>
+                            <button type="button" @click="showEditModal = false" class="text-slate-400 hover:text-slate-600 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="px-6 py-5 space-y-4">
+                        <div>
+                            <label class="form-label">Nama Kriteria</label>
+                            <input type="text" name="name" x-model="editName" required class="form-input w-full">
+                        </div>
+                        <div>
+                            <label class="form-label">Tipe Parameter</label>
+                            <select name="type" x-model="editType" required class="form-input w-full">
+                                <option value="benefit">Benefit (Semakin tinggi semakin bagus)</option>
+                                <option value="cost">Cost (Semakin rendah semakin bagus)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label">Bobot Preferensi</label>
+                            <input type="number" name="weight" step="0.01" min="0.01" max="1.00" x-model="editWeight" required class="form-input w-full">
+                            <p class="text-xs text-slate-400 mt-1">Masukkan nilai antara 0.01 — 1.00</p>
+                        </div>
+                    </div>
+                    <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                        <button type="button" @click="showEditModal = false" class="btn-secondary">Batal</button>
+                        <button type="submit" class="btn-primary">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Update Kriteria
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
     </div>
+
 </x-app-layout>

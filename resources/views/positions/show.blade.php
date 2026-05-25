@@ -1,286 +1,383 @@
-<x-app-layout>
-    <div x-data="{ 
-        activeTab: 'ranking', // Default langsung ke ranking agar Bos/HR instant melihat hasil
-        showCriteriaCreate: false,
-        showCriteriaEdit: false,
-        showCandidateCreate: false,
-        showCandidateEdit: false,
-        
-        // Form Bindings
-        criteriaAction: '', criteriaName: '', criteriaType: 'benefit', criteriaWeight: '0.00',
-        candidateAction: '', candidateName: '', candidateEmail: '', candidateStatus: ''
-    }">
-        
-        <x-slot name="header">
-            <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <a href="{{ route('positions.index') }}" class="text-gray-400 hover:text-gray-600 transition">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    </a>
-                    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                        Control Center: <span class="text-primary-600">{{ $position->name }}</span>
-                    </h2>
-                </div>
-                
-                <div>
-                    <button x-show="activeTab === 'kriteria' && '{{ Auth::user()->role }}' === 'hr'" @click="showCriteriaCreate = true" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
-                        + Tambah Kriteria
-                    </button>
-                    <button x-show="activeTab === 'kandidat' && '{{ Auth::user()->role }}' === 'hr'" @click="showCandidateCreate = true" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">
-                        + Tambah Kandidat
-                    </button>
-                </div>
-            </div>
-        </x-slot>
+<x-app-layout title="Control Center: {{ $position->name }}" subtitle="Kelola kriteria, kandidat pipeline, penilaian, dan hasil ranking dalam satu tempat">
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-                
-                @if(session('success'))
-                    <div class="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded-xl relative">{{ session('success') }}</div>
-                @endif
-                @if(session('error'))
-                    <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl relative">{{ session('error') }}</div>
-                @endif
+<div x-data="{
+    tab: 'ranking',
+    showCriteriaAdd: false,
+    showCriteriaEdit: false,
+    showCandAdd: false,
+    showCandEdit: false,
+    cAction: '', cName: '', cType: 'benefit', cWeight: '0.00',
+    kAction: '', kName: '', kEmail: '', kStatus: ''
+}" class="space-y-5">
 
-                <div class="border-b border-gray-200 bg-white shadow-sm rounded-2xl overflow-hidden border border-gray-100">
-                    <nav class="flex divide-x divide-gray-100" aria-label="Tabs">
-                        <button @click="activeTab = 'ranking'" :class="activeTab === 'ranking' ? 'bg-primary-50 text-primary-600 font-bold' : 'text-gray-500 hover:text-gray-700'" class="w-1/4 py-4 text-center text-sm transition">
-                            🏆 Peringkat MAIRCA
-                        </button>
-                        <button @click="activeTab = 'input_nilai'" :class="activeTab === 'input_nilai' ? 'bg-primary-50 text-primary-600 font-bold' : 'text-gray-500 hover:text-gray-700'" class="w-1/4 py-4 text-center text-sm transition">
-                            📝 Input Matriks Nilai
-                        </button>
-                        @if(Auth::user()->role === 'hr')
-                            <button @click="activeTab = 'kandidat'" :class="activeTab === 'kandidat' ? 'bg-primary-50 text-primary-600 font-bold' : 'text-gray-500 hover:text-gray-700'" class="w-1/4 py-4 text-center text-sm transition">
-                                👥 Pipeline Pelamar
-                            </button>
-                            <button @click="activeTab = 'kcriteria'" @click.prevent="activeTab = 'kriteria'" :class="activeTab === 'kcriteria' || activeTab === 'kcriteria' ? 'bg-primary-50 text-primary-600 font-bold' : 'text-gray-500 hover:text-gray-700'" class="w-1/4 py-4 text-center text-sm transition">
-                                ⚙ Kriteria & Bobot
-                            </button>
-                        @endif
-                    </nav>
-                </div>
-
-                <div x-show="activeTab === 'ranking'" x-transition>
-                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
-                        @if(!$maircaResult)
-                            <div class="p-12 text-center text-gray-500">Kalkulasi belum siap. Pastikan kriteria sudah ada dan status pelamar sudah dipindahkan ke tahap Evaluasi SPK.</div>
-                        @else
-                            <div class="p-6 overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200 border border-gray-100 rounded-xl">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase w-24">Rank</th>
-                                            <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase">Nama</th>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Skor ($Q_i$)</th>
-                                            <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase">Rekomendasi</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="divide-y divide-gray-200 bg-white">
-                                        @foreach($maircaResult['ranked'] as $idx => $cand)
-                                            <tr class="{{ $idx == 0 ? 'bg-yellow-50/40' : '' }}">
-                                                <td class="px-6 py-4 text-center font-bold text-lg">{{ $idx == 0 ? '🥇' : ($idx == 1 ? '🥈' : ($idx == 2 ? '🥉' : $idx + 1)) }}</td>
-                                                <td class="px-6 py-4 font-bold text-gray-900">{{ $cand->name }}</td>
-                                                <td class="px-6 py-4 text-center font-mono font-bold text-primary-600">{{ number_format($cand->mairca_score, 4) }}</td>
-                                                <td class="px-6 py-4 text-center">
-                                                    <span class="px-3 py-1 text-xs font-bold rounded-full {{ $idx == 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600' }}">
-                                                        {{ $idx == 0 ? 'Sangat Direkomendasikan' : 'Alternatif' }}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-
-                <div x-show="activeTab === 'input_nilai'" x-transition x-cloak>
-                    <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
-                        @if($evalCandidates->isEmpty())
-                            <div class="p-12 text-center text-gray-500">Belum ada kandidat di tahap "3. Evaluasi SPK". Pindahkan status mereka terlebih dahulu di tab Pipeline Pelamar.</div>
-                        @elseif($criteria->isEmpty())
-                            <div class="p-12 text-center text-amber-600 font-medium">Kriteria belum diatur untuk posisi ini.</div>
-                        @else
-                            <form action="{{ route('evaluations.storeBulk') }}" method="POST">
-                                @csrf
-                                <div class="overflow-x-auto">
-                                    <table class="min-w-full divide-y divide-gray-200">
-                                        <thead class="bg-gray-50">
-                                            <tr>
-                                                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase bg-gray-50">Nama Kandidat</th>
-                                                @foreach($criteria as $index => $crit)
-                                                    <th class="px-4 py-4 text-center text-xs font-bold text-gray-500 uppercase min-w-[140px] bg-gray-50">
-                                                        <div class="flex flex-col items-center">
-                                                            <span class="text-[10px] px-1.5 py-0.5 rounded font-bold bg-blue-50 text-blue-700 uppercase">C{{ $index + 1 }} • {{ $crit->type }}</span>
-                                                            <span class="text-xs mt-1 leading-tight font-medium text-gray-700">{{ $crit->name }}</span>
-                                                        </div>
-                                                    </th>
-                                                @endforeach
-                                            </tr>
-                                        </thead>
-                                        <tbody class="divide-y divide-gray-200 bg-white">
-                                            @foreach($evalCandidates as $candidate)
-                                                <tr class="hover:bg-gray-50/50 transition">
-                                                    <td class="px-6 py-4 text-sm font-bold text-gray-900 border-r border-gray-100">{{ $candidate->name }}</td>
-                                                    @foreach($criteria as $crit)
-                                                        <td class="px-2 py-3 text-center border-r border-gray-100 last:border-0">
-                                                            <input type="number" name="scores[{{ $candidate->id }}][{{ $crit->id }}]" value="{{ $existingScores[$candidate->id][$crit->id] ?? '' }}" min="1" max="100" placeholder="-" class="w-20 text-center border-gray-300 rounded-md shadow-sm text-sm focus:ring-primary-500 focus:border-primary-500">
-                                                        </td>
-                                                    @endforeach
-                                                </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end">
-                                    <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2.5 rounded-lg font-bold shadow-sm transition">Simpan Semua Nilai</button>
-                                </div>
-                            </form>
-                        @endif
-                    </div>
-                </div>
-
-                @if(Auth::user()->role === 'hr')
-                    <div x-show="activeTab === 'kandidat'" x-transition x-cloak>
-                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Kandidat</th>
-                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Status</th>
-                                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 bg-white">
-                                    @forelse($allCandidates as $cand)
-                                        <tr class="hover:bg-gray-50 transition">
-                                            <td class="px-6 py-4">
-                                                <div class="text-sm font-bold text-gray-900">{{ $cand->name }}</div>
-                                                <div class="text-sm text-gray-500">{{ $cand->email }}</div>
-                                            </td>
-                                            <td class="px-6 py-4">
-                                                <span class="px-3 py-1 inline-flex text-xs font-bold rounded-full {{ $cand->status === 'evaluasi_spk' ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-800' }}">
-                                                    {{ $cand->status }}
-                                                </span>
-                                            </td>
-                                            <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
-                                                <button @click="showCandidateEdit = true; candidateAction = '/candidates/{{ $cand->id }}'; candidateName = '{{ addslashes($cand->name) }}'; candidateEmail = '{{ $cand->email }}'; candidateStatus = '{{ $cand->status }}'" class="text-indigo-600 hover:text-indigo-900">Update Status</button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="3" class="p-10 text-center text-gray-500">Belum ada pelamar di posisi ini.</td></tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div x-show="activeTab === 'kriteria'" x-transition x-cloak>
-                        <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between mb-6">
-                            <div>
-                                <h4 class="text-sm font-bold text-gray-500 uppercase">Akumulasi Bobot Kriteria</h4>
-                                <p class="text-xs text-gray-400 mt-0.5">Wajib bernilai mutlak 1.00 (100%) untuk dapat mengaktifkan sistem ranking.</p>
-                            </div>
-                            <span class="text-xl font-black {{ $totalWeight == 1.0 ? 'text-green-600' : 'text-amber-500' }}">{{ number_format($totalWeight, 2) }} / 1.00</span>
-                        </div>
-                        <div class="bg-white shadow-sm rounded-2xl border border-gray-100 overflow-hidden">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Kode</th>
-                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Nama</th>
-                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Tipe</th>
-                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">Bobot</th>
-                                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-200 bg-white">
-                                    @forelse($criteria as $index => $crit)
-                                        <tr class="hover:bg-gray-50 transition">
-                                            <td class="px-6 py-4 font-bold text-gray-500">C{{ $index + 1 }}</td>
-                                            <td class="px-6 py-4 font-medium text-gray-900">{{ $crit->name }}</td>
-                                            <td class="px-6 py-4 uppercase text-xs font-bold {{ $crit->type === 'benefit' ? 'text-blue-600' : 'text-orange-600' }}">{{ $crit->type }}</td>
-                                            <td class="px-6 py-4 font-mono">{{ $crit->weight }}</td>
-                                            <td class="px-6 py-4 text-right text-sm font-medium space-x-2">
-                                                <button @click="showCriteriaEdit = true; criteriaAction = '{{ route('positions.criteria.update', [$position->id, $crit->id]) }}'; criteriaName = '{{ addslashes($crit->name) }}'; criteriaType = '{{ $crit->type }}'; criteriaWeight = '{{ $crit->weight }}'" class="text-indigo-600 hover:text-indigo-900">Edit</button>
-                                            </td>
-                                        </tr>
-                                    @empty
-                                        <tr><td colspan="5" class="p-10 text-center text-gray-500">Belum ada kriteria penilaian.</td></tr>
-                                    @endforelse
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                @endif
-
-            </div>
+    {{-- Tabs --}}
+    <div class="data-card">
+        <div class="flex">
+            <button @click="tab='ranking'"
+                    :class="tab==='ranking' ? 'text-indigo-700 border-b-2 border-indigo-600 font-bold bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700'"
+                    class="flex-1 py-3.5 text-sm text-center transition-all">
+                🏆 Ranking MAIRCA
+            </button>
+            <button @click="tab='nilai'"
+                    :class="tab==='nilai' ? 'text-indigo-700 border-b-2 border-indigo-600 font-bold bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700'"
+                    class="flex-1 py-3.5 text-sm text-center transition-all">
+                📝 Input Nilai
+            </button>
+            @if(Auth::user()->role === 'hr')
+            <button @click="tab='pipeline'"
+                    :class="tab==='pipeline' ? 'text-indigo-700 border-b-2 border-indigo-600 font-bold bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700'"
+                    class="flex-1 py-3.5 text-sm text-center transition-all">
+                👥 Pipeline Kandidat
+            </button>
+            <button @click="tab='kriteria'"
+                    :class="tab==='kriteria' ? 'text-indigo-700 border-b-2 border-indigo-600 font-bold bg-indigo-50/50' : 'text-slate-500 hover:text-slate-700'"
+                    class="flex-1 py-3.5 text-sm text-center transition-all">
+                ⚙ Kriteria & Bobot
+            </button>
+            @endif
         </div>
-
-        <div x-cloak x-show="showCriteriaCreate" class="fixed inset-0 z-50 overflow-y-auto bg-gray-500/70 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full shadow-xl overflow-hidden" @click.away="showCriteriaCreate = false">
-                <form action="{{ route('positions.criteria.store', $position->id) }}" method="POST" class="p-6 space-y-4">
-                    @csrf
-                    <h3 class="text-lg font-bold text-gray-900">Tambah Parameter Kriteria</h3>
-                    <div><label class="text-sm font-medium text-gray-700">Nama Kriteria</label><input type="text" name="name" required class="mt-1 w-full border-gray-300 rounded-md"></div>
-                    <div><label class="text-sm font-medium text-gray-700">Tipe Parameter</label><select name="type" required class="mt-1 w-full border-gray-300 rounded-md"><option value="benefit">Benefit</option><option value="cost">Cost</option></select></div>
-                    <div><label class="text-sm font-medium text-gray-700">Bobot Preferensi</label><input type="number" name="weight" step="0.01" min="0.01" max="1.00" required class="mt-1 w-full border-gray-300 rounded-md" placeholder="0.25"></div>
-                    <div class="flex justify-end space-x-2"><button type="button" @click="showCriteriaCreate = false" class="px-4 py-2 border rounded-lg text-sm text-gray-700 bg-white">Batal</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">Simpan</button></div>
-                </form>
-            </div>
-        </div>
-
-        <div x-cloak x-show="showCriteriaEdit" class="fixed inset-0 z-50 overflow-y-auto bg-gray-500/70 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full shadow-xl overflow-hidden" @click.away="showCriteriaEdit = false">
-                <form x-bind:action="criteriaAction" method="POST" class="p-6 space-y-4">
-                    @csrf @method('PUT')
-                    <h3 class="text-lg font-bold text-gray-900">Ubah Parameter Kriteria</h3>
-                    <div><label class="text-sm font-medium text-gray-700">Nama Kriteria</label><input type="text" name="name" x-model="criteriaName" required class="mt-1 w-full border-gray-300 rounded-md"></div>
-                    <div><label class="text-sm font-medium text-gray-700">Tipe</label><select name="type" x-model="criteriaType" required class="mt-1 w-full border-gray-300 rounded-md"><option value="benefit">Benefit</option><option value="cost">Cost</option></select></div>
-                    <div><label class="text-sm font-medium text-gray-700">Bobot</label><input type="number" name="weight" step="0.01" x-model="criteriaWeight" required class="mt-1 w-full border-gray-300 rounded-md"></div>
-                    <div class="flex justify-end space-x-2"><button type="button" @click="showCriteriaEdit = false" class="px-4 py-2 border rounded-lg text-sm text-gray-700 bg-white">Batal</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">Update</button></div>
-                </form>
-            </div>
-        </div>
-
-        <div x-cloak x-show="showCandidateCreate" class="fixed inset-0 z-50 overflow-y-auto bg-gray-500/70 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full shadow-xl overflow-hidden" @click.away="showCandidateCreate = false">
-                <form action="{{ route('candidates.store') }}" method="POST" class="p-6 space-y-4">
-                    @csrf
-                    <input type="hidden" name="position_id" value="{{ $position->id }}">
-                    <h3 class="text-lg font-bold text-gray-900">Tambah Data Kandidat Pelamar</h3>
-                    <div><label class="text-sm font-medium text-gray-700">Nama Lengkap</label><input type="text" name="name" required class="mt-1 w-full border-gray-300 rounded-md"></div>
-                    <div><label class="text-sm font-medium text-gray-700">Email</label><input type="email" name="email" required class="mt-1 w-full border-gray-300 rounded-md"></div>
-                    <div class="flex justify-end space-x-2"><button type="button" @click="showCandidateCreate = false" class="px-4 py-2 border rounded-lg text-sm text-gray-700 bg-white">Batal</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">Simpan</button></div>
-                </form>
-            </div>
-        </div>
-
-        <div x-cloak x-show="showCandidateEdit" class="fixed inset-0 z-50 overflow-y-auto bg-gray-500/70 flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full shadow-xl overflow-hidden" @click.away="showCandidateEdit = false">
-                <form x-bind:action="candidateAction" method="POST" class="p-6 space-y-4">
-                    @csrf @method('PUT')
-                    <input type="hidden" name="position_id" value="{{ $position->id }}">
-                    <h3 class="text-lg font-bold text-gray-900">Update Profil & Status Pipeline</h3>
-                    <div><label class="text-sm font-medium text-gray-700">Nama</label><input type="text" name="name" x-model="candidateName" required class="mt-1 w-full border-gray-300 rounded-md"></div>
-                    <div><label class="text-sm font-medium text-gray-700">Email</label><input type="email" name="email" x-model="candidateEmail" required class="mt-1 w-full border-gray-300 rounded-md"></div>
-                    <div>
-                        <label class="text-sm font-bold text-gray-700">Status Pipeline</label>
-                        <select name="status" x-model="candidateStatus" required class="mt-1 w-full border-gray-300 rounded-md bg-gray-50">
-                            <option value="berkas">1. Seleksi Berkas</option>
-                            <option value="tes_praktis">2. Tes Praktis</option>
-                            <option value="evaluasi_spk">3. Evaluasi SPK (Siap Dinilai MAIRCA)</option>
-                            <option value="hired">Lolos (Hired)</option>
-                            <option value="rejected">Ditolak</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end space-x-2"><button type="button" @click="showCandidateEdit = false" class="px-4 py-2 border rounded-lg text-sm text-gray-700 bg-white">Batal</button><button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-bold">Update Data</button></div>
-                </form>
-            </div>
-        </div>
-
     </div>
+
+    {{-- ══════════════ TAB: RANKING ══════════════ --}}
+    <div x-show="tab==='ranking'" x-transition class="data-card">
+        @if(!$maircaResult)
+        <div class="py-16 text-center">
+            <div class="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-3"
+                 style="background: linear-gradient(135deg, #fffbeb, #fef3c7);">
+                <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <p class="text-sm font-semibold text-slate-500">Kalkulasi belum siap</p>
+            <p class="text-xs text-slate-400 mt-1">Pastikan kriteria sudah ada dan ada kandidat berstatus <b class="text-amber-600">Evaluasi SPK</b> yang sudah dinilai.</p>
+        </div>
+        @else
+        <div class="overflow-x-auto">
+            <table class="w-full data-table">
+                <thead>
+                    <tr>
+                        <th class="text-center w-16">Rank</th>
+                        <th>Kandidat</th>
+                        <th class="text-center">Skor Q<sub>i</sub></th>
+                        <th class="text-center">Keputusan</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($maircaResult['ranked'] as $i => $c)
+                    @php $isFirst = $i === 0; @endphp
+                    <tr style="{{ $isFirst ? 'background: linear-gradient(to right, #eef2ff, transparent);' : '' }}">
+                        <td class="text-center">
+                            @if($i===0) <span class="text-xl">🥇</span>
+                            @elseif($i===1) <span class="text-xl">🥈</span>
+                            @elseif($i===2) <span class="text-xl">🥉</span>
+                            @else <span class="text-sm font-bold text-slate-400">{{ $i+1 }}</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                                     style="{{ $isFirst ? 'background: linear-gradient(135deg, #4f46e5, #3b82f6);' : 'background: linear-gradient(135deg, #94a3b8, #64748b);' }}">
+                                    {{ strtoupper(substr($c->name,0,1)) }}
+                                </div>
+                                <div>
+                                    <p class="font-bold {{ $isFirst ? 'text-indigo-700' : 'text-slate-700' }}">{{ $c->name }}</p>
+                                    <p class="text-xs text-slate-400">{{ $c->email }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center font-mono font-black {{ $isFirst ? 'text-indigo-600' : 'text-slate-600' }}">
+                            {{ number_format($c->mairca_score, 4) }}
+                        </td>
+                        <td class="text-center">
+                            @if($isFirst)
+                            <span class="badge badge-green">✓ Sangat Direkomendasikan</span>
+                            @else
+                            <span class="badge badge-gray">Alternatif</span>
+                            @endif
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+    </div>
+
+    {{-- ══════════════ TAB: INPUT NILAI ══════════════ --}}
+    <div x-show="tab==='nilai'" x-transition x-cloak class="data-card">
+        @if($evalCandidates->isEmpty())
+        <div class="py-16 text-center">
+            <p class="text-sm font-semibold text-slate-500">Belum ada kandidat di tahap Evaluasi SPK</p>
+            <p class="text-xs text-slate-400 mt-1">Pindahkan status kandidat di tab Pipeline terlebih dahulu.</p>
+        </div>
+        @elseif($criteria->isEmpty())
+        <div class="py-16 text-center">
+            <p class="text-sm font-semibold text-amber-600">Kriteria belum diatur untuk posisi ini.</p>
+        </div>
+        @else
+        <form action="{{ route('evaluations.storeBulk') }}" method="POST">
+            @csrf
+            <div class="overflow-x-auto" style="max-height: 500px;">
+                <table class="w-full text-sm">
+                    <thead style="position: sticky; top: 0; z-index: 10;">
+                        <tr class="border-b border-slate-100" style="background: #f8fafc;">
+                            <th class="text-left text-xs font-bold text-slate-500 uppercase tracking-wider px-6 py-3 min-w-[180px]">Kandidat</th>
+                            @foreach($criteria as $idx => $crit)
+                            <th class="text-center text-xs font-bold text-slate-500 uppercase tracking-wider px-4 py-3 min-w-[130px]">
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $crit->type==='benefit' ? 'badge-blue' : '' }}" style="{{ $crit->type!=='benefit' ? 'background:#fff7ed; color:#c2410c;' : '' }}">
+                                        C{{ $idx+1 }} · {{ $crit->type }}
+                                    </span>
+                                    <span class="text-[11px] normal-case font-semibold text-slate-600">{{ $crit->name }}</span>
+                                </div>
+                            </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        @foreach($evalCandidates as $candidate)
+                        <tr class="hover:bg-indigo-50/20 transition-colors">
+                            <td class="px-6 py-3.5">
+                                <p class="font-semibold text-slate-800">{{ $candidate->name }}</p>
+                                <p class="text-xs text-slate-400">{{ $candidate->email }}</p>
+                            </td>
+                            @foreach($criteria as $crit)
+                            @php $val = $existingScores[$candidate->id][$crit->id] ?? ''; @endphp
+                            <td class="px-4 py-3.5 text-center">
+                                <input type="number" name="scores[{{ $candidate->id }}][{{ $crit->id }}]"
+                                       value="{{ $val }}" min="1" max="100" placeholder="—"
+                                       class="w-20 text-center text-sm rounded-xl px-2 py-2 border transition-all focus:outline-none"
+                                       style="{{ $val ? 'border-color: #818cf8; background: #eef2ff;' : 'border-color: #e2e8f0;' }}"
+                                       onfocus="this.style.boxShadow='0 0 0 3px rgba(99,102,241,0.15)'; this.style.borderColor='#6366f1';"
+                                       onblur="this.style.boxShadow=''; if(!this.value){this.style.borderColor='#e2e8f0'; this.style.background='white';}else{this.style.borderColor='#818cf8'; this.style.background='#eef2ff';}">
+                            </td>
+                            @endforeach
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-6 py-4 border-t border-slate-100 flex justify-end" style="background: #fafafa;">
+                <button type="submit" class="btn-primary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Simpan Semua Nilai
+                </button>
+            </div>
+        </form>
+        @endif
+    </div>
+
+    @if(Auth::user()->role === 'hr')
+    {{-- ══════════════ TAB: PIPELINE ══════════════ --}}
+    <div x-show="tab==='pipeline'" x-transition x-cloak>
+        <div class="flex justify-end mb-3">
+            <button @click="showCandAdd=true" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                Tambah Kandidat
+            </button>
+        </div>
+        <div class="data-card">
+            @if($allCandidates->isEmpty())
+            <div class="py-14 text-center text-sm text-slate-400">Belum ada kandidat di posisi ini.</div>
+            @else
+            <div class="overflow-x-auto">
+                <table class="w-full data-table">
+                    <thead>
+                        <tr>
+                            <th>Kandidat</th>
+                            <th>Status Pipeline</th>
+                            <th>Jadwal</th>
+                            <th class="text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($allCandidates as $cand)
+                        @php
+                            $badgeMap = ['berkas'=>'badge-gray','tes_praktis'=>'badge-blue','wawancara_hr'=>'badge-purple','wawancara_user'=>'badge-indigo','evaluasi_spk'=>'badge-amber','hired'=>'badge-green','rejected'=>'badge-red'];
+                            $nextInterview = $cand->interviewSchedules()->where('status','scheduled')->orderBy('scheduled_at')->first();
+                        @endphp
+                        <tr>
+                            <td>
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+                                         style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                                        {{ strtoupper(substr($cand->name,0,1)) }}
+                                    </div>
+                                    <div>
+                                        <p class="font-semibold text-slate-800">{{ $cand->name }}</p>
+                                        <p class="text-xs text-slate-400">{{ $cand->email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="badge {{ $badgeMap[$cand->status] ?? 'badge-gray' }}">{{ $cand->getStatusLabel() }}</span></td>
+                            <td>
+                                @if($nextInterview)
+                                <span class="text-xs text-slate-600">{{ $nextInterview->scheduled_at->format('d M, H:i') }}</span>
+                                @else
+                                <span class="text-xs text-slate-300">—</span>
+                                @endif
+                            </td>
+                            <td class="text-right">
+                                <div class="flex items-center justify-end gap-1">
+                                    <a href="{{ route('interviews.create', ['candidate_id'=>$cand->id]) }}"
+                                       class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Jadwalkan Wawancara">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    </a>
+                                    <button @click="showCandEdit=true; kAction='/candidates/{{ $cand->id }}'; kName='{{ addslashes($cand->name) }}'; kEmail='{{ $cand->email }}'; kStatus='{{ $cand->status }}'"
+                                            class="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Update Status">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- ══════════════ TAB: KRITERIA ══════════════ --}}
+    <div x-show="tab==='kriteria'" x-transition x-cloak>
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl {{ $totalWeight == 1.0 ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50' }} border">
+                <span class="text-sm font-black {{ $totalWeight == 1.0 ? 'text-emerald-700' : 'text-amber-700' }}">
+                    {{ number_format($totalWeight, 2) }} / 1.00
+                </span>
+                <span class="badge {{ $totalWeight == 1.0 ? 'badge-green' : 'badge-amber' }}">
+                    {{ $totalWeight == 1.0 ? '✓ Valid' : '⚠ Belum Valid' }}
+                </span>
+            </div>
+            <button @click="showCriteriaAdd=true" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                Tambah Kriteria
+            </button>
+        </div>
+        <div class="data-card">
+            @if($criteria->isEmpty())
+            <div class="py-14 text-center text-sm text-slate-400">Belum ada kriteria penilaian.</div>
+            @else
+            <div class="overflow-x-auto">
+                <table class="w-full data-table">
+                    <thead>
+                        <tr>
+                            <th class="w-16">Kode</th>
+                            <th>Nama Kriteria</th>
+                            <th>Tipe</th>
+                            <th>Bobot</th>
+                            <th class="text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($criteria as $idx => $crit)
+                        <tr>
+                            <td class="font-bold text-slate-500">C{{ $idx+1 }}</td>
+                            <td class="font-medium text-slate-800">{{ $crit->name }}</td>
+                            <td>
+                                <span class="badge {{ $crit->type==='benefit' ? 'badge-blue' : '' }}" style="{{ $crit->type!=='benefit' ? 'background:#fff7ed; color:#c2410c;' : '' }}">
+                                    {{ ucfirst($crit->type) }}
+                                </span>
+                            </td>
+                            <td class="font-mono font-semibold text-slate-700">{{ $crit->weight }} <span class="text-slate-400 text-xs">({{ $crit->weight * 100 }}%)</span></td>
+                            <td class="text-right">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button @click="showCriteriaEdit=true; cAction='{{ route('positions.criteria.update', [$position->id, $crit->id]) }}'; cName='{{ addslashes($crit->name) }}'; cType='{{ $crit->type }}'; cWeight='{{ $crit->weight }}'"
+                                            class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </button>
+                                    <form method="POST" action="{{ route('positions.criteria.destroy', [$position->id, $crit->id]) }}" onsubmit="return confirm('Hapus kriteria ini?')">
+                                        @csrf @method('DELETE')
+                                        <button type="submit" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @endif
+        </div>
+    </div>
+    @endif
+
+    {{-- ══════════════ MODALS ══════════════ --}}
+
+    {{-- Add Criteria --}}
+    <div x-show="showCriteriaAdd" x-cloak class="modal-overlay" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        <div class="absolute inset-0" @click="showCriteriaAdd=false"></div>
+        <div class="modal-box" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+            <div class="px-6 py-4 border-b border-slate-100"><p class="font-bold text-slate-800">Tambah Kriteria</p></div>
+            <form action="{{ route('positions.criteria.store', $position->id) }}" method="POST" class="px-6 py-5 space-y-4">
+                @csrf
+                <div><label class="form-label">Nama Kriteria <span class="text-red-500">*</span></label><input type="text" name="name" required class="form-input" placeholder="Contoh: Kemampuan Coding"></div>
+                <div><label class="form-label">Tipe <span class="text-red-500">*</span></label><select name="type" required class="form-input"><option value="benefit">Benefit (Semakin tinggi = bagus)</option><option value="cost">Cost (Semakin rendah = bagus)</option></select></div>
+                <div><label class="form-label">Bobot <span class="text-red-500">*</span></label><input type="number" name="weight" step="0.01" min="0.01" max="1.00" required class="form-input" placeholder="0.25"></div>
+                <div class="flex justify-end gap-3 pt-2 border-t border-slate-100"><button type="button" @click="showCriteriaAdd=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Edit Criteria --}}
+    <div x-show="showCriteriaEdit" x-cloak class="modal-overlay" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        <div class="absolute inset-0" @click="showCriteriaEdit=false"></div>
+        <div class="modal-box" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+            <div class="px-6 py-4 border-b border-slate-100"><p class="font-bold text-slate-800">Edit Kriteria</p></div>
+            <form :action="cAction" method="POST" class="px-6 py-5 space-y-4">
+                @csrf @method('PUT')
+                <div><label class="form-label">Nama Kriteria</label><input type="text" name="name" x-model="cName" required class="form-input"></div>
+                <div><label class="form-label">Tipe</label><select name="type" x-model="cType" required class="form-input"><option value="benefit">Benefit</option><option value="cost">Cost</option></select></div>
+                <div><label class="form-label">Bobot</label><input type="number" name="weight" step="0.01" x-model="cWeight" required class="form-input"></div>
+                <div class="flex justify-end gap-3 pt-2 border-t border-slate-100"><button type="button" @click="showCriteriaEdit=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 2px 8px rgba(245,158,11,0.3);">Update</button></div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Add Candidate --}}
+    <div x-show="showCandAdd" x-cloak class="modal-overlay" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        <div class="absolute inset-0" @click="showCandAdd=false"></div>
+        <div class="modal-box" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+            <div class="px-6 py-4 border-b border-slate-100"><p class="font-bold text-slate-800">Tambah Kandidat ke {{ $position->name }}</p></div>
+            <form action="{{ route('candidates.store') }}" method="POST" class="px-6 py-5 space-y-4">
+                @csrf
+                <input type="hidden" name="position_id" value="{{ $position->id }}">
+                <div><label class="form-label">Nama Lengkap <span class="text-red-500">*</span></label><input type="text" name="name" required class="form-input"></div>
+                <div><label class="form-label">Email <span class="text-red-500">*</span></label><input type="email" name="email" required class="form-input"></div>
+                <div><label class="form-label">No. HP</label><input type="text" name="phone" class="form-input" placeholder="08xx"></div>
+                <div class="flex justify-end gap-3 pt-2 border-t border-slate-100"><button type="button" @click="showCandAdd=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
+            </form>
+        </div>
+    </div>
+
+    {{-- Edit Candidate Status --}}
+    <div x-show="showCandEdit" x-cloak class="modal-overlay" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+        <div class="absolute inset-0" @click="showCandEdit=false"></div>
+        <div class="modal-box" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+            <div class="px-6 py-4 border-b border-slate-100"><p class="font-bold text-slate-800">Update Status Kandidat</p></div>
+            <form :action="kAction" method="POST" class="px-6 py-5 space-y-4">
+                @csrf @method('PUT')
+                <input type="hidden" name="position_id" value="{{ $position->id }}">
+                <div><label class="form-label">Nama</label><input type="text" name="name" x-model="kName" required class="form-input"></div>
+                <div><label class="form-label">Email</label><input type="email" name="email" x-model="kEmail" required class="form-input"></div>
+                <div>
+                    <label class="form-label">Status Pipeline</label>
+                    <select name="status" x-model="kStatus" required class="form-input">
+                        <option value="berkas">1. Seleksi Berkas</option>
+                        <option value="tes_praktis">2. Tes Praktis</option>
+                        <option value="wawancara_hr">3. Wawancara HR</option>
+                        <option value="wawancara_user">4. Wawancara User</option>
+                        <option value="evaluasi_spk">5. Evaluasi SPK (Siap MAIRCA)</option>
+                        <option value="hired">✓ Diterima (Hired)</option>
+                        <option value="rejected">✗ Ditolak (Rejected)</option>
+                    </select>
+                    <p class="text-xs text-slate-400 mt-1.5 bg-amber-50 px-3 py-2 rounded-lg border border-amber-100">💡 Set ke <b class="text-amber-700">Evaluasi SPK</b> agar kandidat masuk ke form penilaian MAIRCA.</p>
+                </div>
+                <div class="flex justify-end gap-3 pt-2 border-t border-slate-100"><button type="button" @click="showCandEdit=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 2px 8px rgba(245,158,11,0.3);">Update Status</button></div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
 </x-app-layout>
