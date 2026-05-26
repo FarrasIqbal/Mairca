@@ -152,7 +152,7 @@
                         </div>
                         <div>
                             <label class="form-label">Tipe Parameter</label>
-                            <select name="type" required class="form-input w-full">
+                            <select name="type" required class="form-select w-full">
                                 <option value="benefit">Benefit (Semakin tinggi semakin bagus)</option>
                                 <option value="cost">Cost (Semakin rendah semakin bagus)</option>
                             </select>
@@ -195,7 +195,7 @@
                         </div>
                         <div>
                             <label class="form-label">Tipe Parameter</label>
-                            <select name="type" x-model="editType" required class="form-input w-full">
+                            <select name="type" x-model="editType" required class="form-select w-full">
                                 <option value="benefit">Benefit (Semakin tinggi semakin bagus)</option>
                                 <option value="cost">Cost (Semakin rendah semakin bagus)</option>
                             </select>

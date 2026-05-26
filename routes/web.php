@@ -9,6 +9,7 @@ use App\Http\Controllers\RankingController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InterviewScheduleController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\AdminPracticalTestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -33,14 +34,29 @@ Route::middleware('auth')->group(function () {
     Route::get('/evaluations', [EvaluationController::class, 'index'])->name('evaluations.index');
     Route::post('/evaluations/bulk', [EvaluationController::class, 'storeBulk'])->name('evaluations.storeBulk');
 
+    // Manajemen Tes Praktis (HR & Reviewer)
+    Route::get('/admin/practical-tests', [AdminPracticalTestController::class, 'index'])->name('admin.practical-tests.index');
+    Route::get('/admin/practical-tests/{candidate}/evaluate', [AdminPracticalTestController::class, 'evaluate'])->name('admin.practical-tests.evaluate');
+    Route::post('/admin/practical-tests/{candidate}/evaluate', [AdminPracticalTestController::class, 'storeEvaluation'])->name('admin.practical-tests.store-evaluation');
+
     // HR-only routes
     Route::middleware('hr-only')->group(function () {
+        Route::post('/admin/practical-tests/questions', [AdminPracticalTestController::class, 'storeQuestion'])->name('admin.practical-tests.questions.store');
+        Route::put('/admin/practical-tests/questions/{question}', [AdminPracticalTestController::class, 'updateQuestion'])->name('admin.practical-tests.questions.update');
+        Route::delete('/admin/practical-tests/questions/{question}', [AdminPracticalTestController::class, 'destroyQuestion'])->name('admin.practical-tests.questions.destroy');
+
         Route::resource('positions', PositionController::class);
         Route::resource('positions.criteria', CriteriaController::class)->except(['show']);
-        Route::resource('candidates', CandidateController::class)->except(['create', 'edit', 'show']);
+        Route::resource('candidates', CandidateController::class)->except(['create', 'edit']);
+        Route::get('/candidates/{candidate}/resume', [CandidateController::class, 'downloadResume'])->name('candidates.resume');
         Route::get('/rankings', [RankingController::class, 'index'])->name('rankings.index');
         Route::resource('users', UserManagementController::class)->except(['show', 'create', 'edit']);
     });
 });
+
+// Public Candidate Practical Test routes
+use App\Http\Controllers\PracticalTestController;
+Route::get('/test/{token}', [PracticalTestController::class, 'showTest'])->name('public.test.show');
+Route::post('/test/{token}/submit', [PracticalTestController::class, 'submitTest'])->name('public.test.submit');
 
 require __DIR__ . '/auth.php';

@@ -9,7 +9,7 @@ class Position extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = ['name', 'is_active', 'test_duration'];
 
     public function criteria()
     {
@@ -19,5 +19,10 @@ class Position extends Model
     public function candidates()
     {
         return $this->hasMany(Candidate::class);
+    }
+
+    public function testQuestions()
+    {
+        return $this->hasMany(TestQuestion::class);
     }
 }

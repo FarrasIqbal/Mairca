@@ -43,6 +43,23 @@ class Candidate extends Model
         return $this->hasMany(InterviewSchedule::class);
     }
 
+    public function practicalTest()
+    {
+        return $this->hasOne(PracticalTest::class);
+    }
+
+    public function ensurePracticalTest()
+    {
+        if (!$this->practicalTest) {
+            $this->practicalTest()->create([
+                'token' => bin2hex(random_bytes(16)),
+                'passing_score' => 70,
+            ]);
+            $this->load('practicalTest');
+        }
+        return $this->practicalTest;
+    }
+
     public function getStatusLabel(): string
     {
         return self::$statuses[$this->status] ?? ucfirst($this->status);
@@ -60,5 +77,10 @@ class Candidate extends Model
             'rejected'       => 'red',
             default          => 'gray',
         };
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class);
     }
 }

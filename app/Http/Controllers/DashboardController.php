@@ -51,11 +51,46 @@ class DashboardController extends Controller
 
         $upcomingSchedules = $upcomingSchedulesQuery->orderBy('scheduled_at')->take(5)->get();
 
+        // === Tes Praktis Selesai Dikerjakan ===
+        $submittedTests = Candidate::with(['position', 'practicalTest'])
+            ->where('status', 'tes_praktis')
+            ->whereHas('practicalTest', function ($q) {
+                $q->whereNotNull('submitted_at');
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
         // === Kandidat Terbaru ===
         $recentCandidates = Candidate::with('position')
             ->latest()
             ->take(5)
             ->get();
+
+        // === Chart Data: Kandidat per Posisi ===
+        $positionBreakdown = Position::withCount('candidates')
+            ->where('is_active', true)
+            ->orderByDesc('candidates_count')
+            ->take(8)
+            ->get()
+            ->map(fn ($p) => ['name' => $p->name, 'count' => $p->candidates_count]);
+
+        // === Chart Data: Trend Hiring 6 Bulan Terakhir ===
+        $hiringTrend = collect();
+        for ($i = 5; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $hiringTrend->push([
+                'month' => $date->translatedFormat('M Y'),
+                'hired' => Candidate::where('status', 'hired')
+                    ->whereMonth('updated_at', $date->month)
+                    ->whereYear('updated_at', $date->year)
+                    ->count(),
+                'rejected' => Candidate::where('status', 'rejected')
+                    ->whereMonth('updated_at', $date->month)
+                    ->whereYear('updated_at', $date->year)
+                    ->count(),
+            ]);
+        }
 
         return view('dashboard', compact(
             'totalPositions',
@@ -65,7 +100,10 @@ class DashboardController extends Controller
             'statusCounts',
             'todaySchedules',
             'upcomingSchedules',
-            'recentCandidates'
+            'recentCandidates',
+            'positionBreakdown',
+            'hiringTrend',
+            'submittedTests'
         ));
     }
 }
