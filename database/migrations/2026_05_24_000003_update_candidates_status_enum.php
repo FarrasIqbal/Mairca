@@ -9,10 +9,27 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // PostgreSQL: alter enum by adding new values
-        // Add new status values to the enum
-        DB::statement("ALTER TABLE candidates DROP CONSTRAINT IF EXISTS candidates_status_check");
-        DB::statement("ALTER TABLE candidates ADD CONSTRAINT candidates_status_check CHECK (status IN ('berkas','tes_praktis','wawancara_hr','wawancara_user','evaluasi_spk','hired','rejected'))");
+        // Update CHECK constraint in a DB-specific way (Postgres vs MySQL/others)
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE candidates DROP CONSTRAINT IF EXISTS candidates_status_check");
+            DB::statement("ALTER TABLE candidates ADD CONSTRAINT candidates_status_check CHECK (status IN ('berkas','tes_praktis','wawancara_hr','wawancara_user','evaluasi_spk','hired','rejected'))");
+        } else {
+            // MySQL: use DROP CHECK (no IF EXISTS) and guard with try/catch because
+            // some MySQL versions or engines may not support CHECK constraints.
+            try {
+                DB::statement("ALTER TABLE candidates DROP CHECK candidates_status_check");
+            } catch (\Exception $e) {
+                // ignore if it doesn't exist or not supported
+            }
+
+            try {
+                DB::statement("ALTER TABLE candidates ADD CONSTRAINT candidates_status_check CHECK (status IN ('berkas','tes_praktis','wawancara_hr','wawancara_user','evaluasi_spk','hired','rejected'))");
+            } catch (\Exception $e) {
+                // ignore if the server/engine doesn't support check constraints
+            }
+        }
 
         // Add new columns
         Schema::table('candidates', function (Blueprint $table) {
@@ -27,7 +44,21 @@ return new class extends Migration
             $table->dropColumn(['phone', 'resume_path']);
         });
 
-        DB::statement("ALTER TABLE candidates DROP CONSTRAINT IF EXISTS candidates_status_check");
-        DB::statement("ALTER TABLE candidates ADD CONSTRAINT candidates_status_check CHECK (status IN ('berkas','tes_praktis','evaluasi_spk','hired','rejected'))");
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE candidates DROP CONSTRAINT IF EXISTS candidates_status_check");
+            DB::statement("ALTER TABLE candidates ADD CONSTRAINT candidates_status_check CHECK (status IN ('berkas','tes_praktis','evaluasi_spk','hired','rejected'))");
+        } else {
+            try {
+                DB::statement("ALTER TABLE candidates DROP CHECK candidates_status_check");
+            } catch (\Exception $e) {
+            }
+
+            try {
+                DB::statement("ALTER TABLE candidates ADD CONSTRAINT candidates_status_check CHECK (status IN ('berkas','tes_praktis','evaluasi_spk','hired','rejected'))");
+            } catch (\Exception $e) {
+            }
+        }
     }
 };
