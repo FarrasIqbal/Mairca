@@ -20,6 +20,7 @@ class PracticalTest extends Model
         'reviewer_notes',
         'is_suitable',
         'submitted_at',
+        'expires_at',
     ];
 
     protected $casts = [
@@ -28,6 +29,7 @@ class PracticalTest extends Model
         'is_suitable' => 'boolean',
         'started_at' => 'datetime',
         'submitted_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     public function candidate()

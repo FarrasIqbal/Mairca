@@ -84,11 +84,17 @@
                                         <span class="text-[10px] text-slate-400 block font-semibold mt-0.5">{{ $candidate->email }}</span>
                                     </div>
                                 </div>
-                            </td>
-                            <td class="font-bold text-slate-600">{{ $candidate->position->name ?? '—' }}</td>
-                            <td class="text-center">
+                              <td class="text-center">
                                 @if(!$test || !$test->submitted_at)
-                                    <span class="badge badge-gray text-[9px]">Menunggu Jawaban</span>
+                                    @if($test && $test->expires_at && \Carbon\Carbon::now()->greaterThan($test->expires_at))
+                                        <span class="badge badge-red text-[9px] block mx-auto w-max">Kedaluwarsa</span>
+                                        <span class="text-[9px] text-slate-400 font-semibold block mt-1">Batas: {{ $test->expires_at->translatedFormat('d M') }}</span>
+                                    @else
+                                        <span class="badge badge-gray text-[9px] block mx-auto w-max">Menunggu Jawaban</span>
+                                        @if($test && $test->expires_at)
+                                            <span class="text-[9px] text-slate-500 font-semibold block mt-1">s/d {{ $test->expires_at->translatedFormat('d M, H:i') }}</span>
+                                        @endif
+                                    @endif
                                 @else
                                     <span class="badge badge-blue text-[9px]">Sudah Dikirim</span>
                                 @endif
@@ -111,9 +117,18 @@
                                         Beri Penilaian
                                     </a>
                                 @else
-                                    <button disabled class="btn-secondary py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider opacity-40 cursor-not-allowed">
-                                        Belum Submit
-                                    </button>
+                                    @if($test && $test->expires_at && \Carbon\Carbon::now()->greaterThan($test->expires_at))
+                                        <form action="{{ route('admin.practical-tests.candidates.extend', $candidate->id) }}" method="POST" class="inline-block">
+                                            @csrf
+                                            <button type="submit" class="btn-secondary py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-amber-200 text-amber-700 hover:bg-amber-50">
+                                                Perpanjang 3 Hari
+                                            </button>
+                                        </form>
+                                    @else
+                                        <button disabled class="btn-secondary py-1.5 px-3 rounded-lg text-[10px] font-bold uppercase tracking-wider opacity-40 cursor-not-allowed">
+                                            Belum Submit
+                                        </button>
+                                    @endif
                                 @endif
                             </td>
                         </tr>
@@ -150,6 +165,38 @@
             </button>
             @endif
         </div>
+
+        @if($activePosition)
+        {{-- Position Test Configuration Settings --}}
+        <div class="bg-white p-4.5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div>
+                    <h4 class="font-extrabold text-slate-800 text-xs">Pengaturan Waktu Ujian Praktis</h4>
+                    <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Batas durasi waktu mundur untuk posisi pelamar ini.</p>
+                </div>
+            </div>
+            <form action="{{ route('admin.practical-tests.positions.duration', $activePosition->id) }}" method="POST" class="flex items-center gap-2">
+                @csrf
+                <div class="flex items-center gap-1.5">
+                    <input type="number" 
+                           name="test_duration" 
+                           value="{{ $activePosition->test_duration ?? 60 }}" 
+                           min="5" 
+                           max="480" 
+                           required 
+                           class="form-input w-24 text-center font-extrabold text-slate-800 text-xs py-1.5"
+                           placeholder="60">
+                    <span class="text-xs font-bold text-slate-500">Menit</span>
+                </div>
+                <button type="submit" class="btn-secondary py-1.5 px-3 rounded-xl text-xs font-bold shadow-sm">
+                    Simpan Durasi
+                </button>
+            </form>
+        </div>
+        @endif
 
         {{-- Questions Card --}}
         <div class="data-card">

@@ -259,4 +259,41 @@ class AdminPracticalTestController extends Controller
         return redirect()->route('admin.practical-tests.index')
             ->with('success', 'Penilaian manual kandidat ' . $candidate->name . ' berhasil disimpan!');
     }
+
+    /**
+     * Update the practical test duration for a position.
+     */
+    public function updatePositionDuration(Request $request, Position $position)
+    {
+        $request->validate([
+            'test_duration' => 'required|integer|min:5|max:480',
+        ]);
+
+        $position->update([
+            'test_duration' => $request->test_duration,
+        ]);
+
+        return back()->with('success', 'Durasi waktu pengerjaan tes untuk posisi ' . $position->name . ' berhasil diperbarui!');
+    }
+
+    /**
+     * Extend practical test link expiration date for a candidate.
+     */
+    public function extendTestLink(Candidate $candidate)
+    {
+        $test = $candidate->ensurePracticalTest();
+        
+        $test->update([
+            'expires_at' => \Carbon\Carbon::now()->addDays(3),
+        ]);
+
+        ActivityLog::create([
+            'candidate_id' => $candidate->id,
+            'user_id' => Auth::id(),
+            'action' => 'practical_test_extended',
+            'description' => 'Tautan ujian praktis pelamar diperpanjang selama 3 hari oleh ' . Auth::user()->name,
+        ]);
+
+        return back()->with('success', 'Tautan ujian kandidat ' . $candidate->name . ' berhasil diperpanjang 3 hari ke depan!');
+    }
 }

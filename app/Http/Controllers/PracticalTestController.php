@@ -22,6 +22,11 @@ class PracticalTestController extends Controller
             return view('practical_tests.submitted', compact('candidate', 'test'));
         }
 
+        // Check link expiration
+        if ($test->expires_at && Carbon::now()->greaterThan($test->expires_at)) {
+            return view('practical_tests.expired', compact('candidate', 'test'));
+        }
+
         $position = $candidate->position;
         
         // Start the test timer on first view

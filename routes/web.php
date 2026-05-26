@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/admin/practical-tests/questions', [AdminPracticalTestController::class, 'storeQuestion'])->name('admin.practical-tests.questions.store');
         Route::put('/admin/practical-tests/questions/{question}', [AdminPracticalTestController::class, 'updateQuestion'])->name('admin.practical-tests.questions.update');
         Route::delete('/admin/practical-tests/questions/{question}', [AdminPracticalTestController::class, 'destroyQuestion'])->name('admin.practical-tests.questions.destroy');
+        Route::post('/admin/practical-tests/positions/{position}/duration', [AdminPracticalTestController::class, 'updatePositionDuration'])->name('admin.practical-tests.positions.duration');
+        Route::post('/admin/practical-tests/{candidate}/extend', [AdminPracticalTestController::class, 'extendTestLink'])->name('admin.practical-tests.candidates.extend');
 
         Route::resource('positions', PositionController::class);
         Route::resource('positions.criteria', CriteriaController::class)->except(['show']);

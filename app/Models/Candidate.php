@@ -54,6 +54,7 @@ class Candidate extends Model
             $this->practicalTest()->create([
                 'token' => bin2hex(random_bytes(16)),
                 'passing_score' => 70,
+                'expires_at' => \Carbon\Carbon::now()->addDays(3),
             ]);
             $this->load('practicalTest');
         }
