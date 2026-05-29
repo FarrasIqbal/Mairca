@@ -32,5 +32,14 @@ class DatabaseSeeder extends Seeder
                 'role' => 'reviewer',
             ]
         );
+
+        User::updateOrCreate(
+            ['email' => 'iqbal@gmail.com'],
+            [
+                'name' => 'Lead IT Division',
+                'password' => Hash::make('password123'),
+                'role' => 'reviewer',
+            ]
+        );
     }
 }
