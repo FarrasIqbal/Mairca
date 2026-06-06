@@ -51,6 +51,8 @@ class MaircaEngineService
 
         // 3. Matriks Riil (Tr) & Matriks Gap (G)
         $Q = []; // Array untuk menampung total skor akhir (Qi)
+        $Tr = [];
+        $G = [];
 
         foreach ($candidates as $candidate) {
             $Q[$candidate->id] = 0;
@@ -79,6 +81,9 @@ class MaircaEngineService
                 // 4. Kesenjangan / Gap (G) = Tp - Tr
                 $gap = $tp - $tr;
 
+                $Tr[$candidate->id][$c->id] = $tr;
+                $G[$candidate->id][$c->id] = $gap;
+
                 // 5. Total Skor (Qi) = Sigma G
                 $Q[$candidate->id] += $gap;
             }
@@ -92,7 +97,15 @@ class MaircaEngineService
 
         return [
             'ranked' => $rankedCandidates,
-            'is_valid' => true
+            'is_valid' => true,
+            'matrixX' => $matrixX,
+            'minMax' => $minMax,
+            'Tp' => $Tp,
+            'Tr' => $Tr,
+            'G' => $G,
+            'Pai' => $Pai,
+            'criteria' => $criteria,
+            'candidates' => $candidates
         ];
     }
 }

@@ -29,11 +29,11 @@
                     <div class="flex items-center gap-4 flex-shrink-0">
                         <div class="text-right">
                             <span class="text-xs text-slate-400 block">Total Saat Ini</span>
-                            <span class="text-2xl font-black {{ $totalWeight == 1.0 ? 'text-emerald-600' : 'text-amber-500' }}">
+                            <span class="text-2xl font-black {{ round($totalWeight, 2) == 1.0 ? 'text-emerald-600' : 'text-amber-500' }}">
                                 {{ number_format($totalWeight, 2) }} / 1.00
                             </span>
                         </div>
-                        @if($totalWeight == 1.0)
+                        @if(round($totalWeight, 2) == 1.0)
                             <span class="badge badge-green">✓ Valid</span>
                         @else
                             <span class="badge badge-amber">⚠ Belum Valid</span>
@@ -43,12 +43,12 @@
                 {{-- Progress Bar --}}
                 <div class="mt-4">
                     <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-                        <div class="h-2.5 rounded-full transition-all duration-500 {{ $totalWeight == 1.0 ? 'bg-emerald-500' : ($totalWeight > 1.0 ? 'bg-red-500' : 'bg-amber-400') }}"
+                        <div class="h-2.5 rounded-full transition-all duration-500 {{ round($totalWeight, 2) == 1.0 ? 'bg-emerald-500' : ($totalWeight > 1.0 ? 'bg-red-500' : 'bg-amber-400') }}"
                              style="width: {{ min($totalWeight * 100, 100) }}%"></div>
                     </div>
                     <div class="flex justify-between mt-1.5">
                         <span class="text-[11px] text-slate-400">0%</span>
-                        <span class="text-[11px] font-medium {{ $totalWeight == 1.0 ? 'text-emerald-600' : 'text-slate-400' }}">{{ number_format($totalWeight * 100, 0) }}%</span>
+                        <span class="text-[11px] font-medium {{ round($totalWeight, 2) == 1.0 ? 'text-emerald-600' : 'text-slate-400' }}">{{ number_format($totalWeight * 100, 0) }}%</span>
                         <span class="text-[11px] text-slate-400">100%</span>
                     </div>
                 </div>
@@ -105,7 +105,8 @@
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                             Edit
                                         </button>
-                                        <form action="{{ route('positions.criteria.destroy', [$position->id, $item->id]) }}" method="POST" class="inline" onsubmit="return confirm('Hapus kriteria ini? Nilai matriks pelamar yang tersimpan juga akan hilang.');">
+                                        <form action="{{ route('positions.criteria.destroy', [$position->id, $item->id]) }}" method="POST" class="inline" 
+                                              @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Hapus Kriteria', message: 'Apakah Anda yakin ingin menghapus kriteria ini? Nilai matriks pelamar yang tersimpan juga akan hilang.', type: 'danger', confirmBtnText: 'Ya, Hapus', callback: () => $el.submit() } }))">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">

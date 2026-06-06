@@ -6,7 +6,9 @@
     editId: null,
     editName: '',
     editEmail: '',
-    editRole: ''
+    editRole: '',
+    editDepartment: '',
+    createRole: 'reviewer'
 }" class="space-y-5">
 
     {{-- Header --}}
@@ -25,6 +27,7 @@
                     <tr>
                         <th>Pengguna</th>
                         <th>Email</th>
+                        <th>Departemen</th>
                         <th>Role</th>
                         <th>Bergabung</th>
                         <th class="text-right">Aksi</th>
@@ -40,30 +43,34 @@
                                     {{ strtoupper(substr($u->name,0,1)) }}
                                 </div>
                                 <div>
-                                    <p class="font-semibold text-slate-800">{{ $u->name }}</p>
+                                    <p class="font-semibold text-slate-800 dark:text-slate-200">{{ $u->name }}</p>
                                     @if($u->id === Auth::id())
                                     <span class="text-xs text-indigo-500 font-semibold">● Anda</span>
                                     @endif
                                 </div>
                             </div>
                         </td>
-                        <td class="text-slate-500">{{ $u->email }}</td>
+                        <td class="text-slate-500 dark:text-slate-400">{{ $u->email }}</td>
+                        <td class="font-medium text-slate-700 dark:text-slate-300">
+                            {{ $u->department ?? '—' }}
+                        </td>
                         <td>
                             <span class="badge {{ $u->role==='hr' ? 'badge-blue' : 'badge-purple' }}">
                                 {{ $u->role==='hr' ? 'HRD' : 'Reviewer' }}
                             </span>
                         </td>
-                        <td class="text-slate-400 text-xs">{{ $u->created_at->format('d M Y') }}</td>
+                        <td class="text-slate-400 dark:text-slate-500 text-xs">{{ $u->created_at->format('d M Y') }}</td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-1">
-                                <button @click="showEdit=true; editId={{ $u->id }}; editName='{{ addslashes($u->name) }}'; editEmail='{{ $u->email }}'; editRole='{{ $u->role }}'"
-                                        class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
+                                <button @click="showEdit=true; editId={{ $u->id }}; editName='{{ addslashes($u->name) }}'; editEmail='{{ $u->email }}'; editRole='{{ $u->role }}'; editDepartment='{{ addslashes($u->department) }}'"
+                                        class="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-all">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </button>
                                 @if($u->id !== Auth::id())
-                                <form method="POST" action="{{ route('users.destroy', $u) }}" onsubmit="return confirm('Hapus akun {{ addslashes($u->name) }}?')">
+                                <form method="POST" action="{{ route('users.destroy', $u) }}" 
+                                      @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Hapus User', message: 'Apakah Anda yakin ingin menghapus akun {{ addslashes($u->name) }}?', type: 'danger', confirmBtnText: 'Ya, Hapus', callback: () => $el.submit() } }))">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
+                                    <button type="submit" class="p-2 text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-950/30 rounded-lg transition-all">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>
@@ -116,10 +123,14 @@
                     </div>
                     <div class="col-span-2">
                         <label class="form-label">Role <span class="text-red-500">*</span></label>
-                        <select name="role" required class="form-input">
+                        <select name="role" required class="form-select" x-model="createRole">
                             <option value="reviewer">Reviewer (User / Lead Departemen)</option>
                             <option value="hr">HRD (Admin)</option>
                         </select>
+                    </div>
+                    <div class="col-span-2" x-show="createRole === 'reviewer'">
+                        <label class="form-label">Departemen <span class="text-red-500">*</span></label>
+                        <input type="text" name="department" list="existing-departments" :required="createRole === 'reviewer'" class="form-input" placeholder="Contoh: SEO, IT, Marketing">
                     </div>
                 </div>
                 <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
@@ -168,10 +179,14 @@
                         </div>
                         <div class="col-span-2">
                             <label class="form-label">Role</label>
-                            <select name="role" required class="form-input">
+                            <select name="role" required class="form-select" x-model="editRole">
                                 <option value="reviewer" :selected="editRole === 'reviewer'">Reviewer (User / Lead)</option>
                                 <option value="hr" :selected="editRole === 'hr'">HRD (Admin)</option>
                             </select>
+                        </div>
+                        <div class="col-span-2" x-show="editRole === 'reviewer'">
+                            <label class="form-label">Departemen <span class="text-red-500">*</span></label>
+                            <input type="text" name="department" :value="editDepartment" list="existing-departments" :required="editRole === 'reviewer'" class="form-input" placeholder="Contoh: SEO, IT, Marketing">
                         </div>
                     </div>
                     <div class="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
@@ -182,6 +197,13 @@
             </template>
         </div>
     </div>
+
+    {{-- Datalist untuk Autocomplete Departemen --}}
+    <datalist id="existing-departments">
+        @foreach($existingDepartments as $dept)
+            <option value="{{ $dept }}">
+        @endforeach
+    </datalist>
 
 </div>
 

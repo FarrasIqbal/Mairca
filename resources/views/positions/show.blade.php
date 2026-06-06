@@ -239,12 +239,12 @@
     {{-- ══════════════ TAB: KRITERIA ══════════════ --}}
     <div x-show="tab==='kriteria'" x-transition x-cloak>
         <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl {{ $totalWeight == 1.0 ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50' }} border">
-                <span class="text-sm font-black {{ $totalWeight == 1.0 ? 'text-emerald-700' : 'text-amber-700' }}">
+            <div class="flex items-center gap-3 px-4 py-2.5 rounded-xl {{ round($totalWeight, 2) == 1.0 ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50' }} border">
+                <span class="text-sm font-black {{ round($totalWeight, 2) == 1.0 ? 'text-emerald-700' : 'text-amber-700' }}">
                     {{ number_format($totalWeight, 2) }} / 1.00
                 </span>
-                <span class="badge {{ $totalWeight == 1.0 ? 'badge-green' : 'badge-amber' }}">
-                    {{ $totalWeight == 1.0 ? '✓ Valid' : '⚠ Belum Valid' }}
+                <span class="badge {{ round($totalWeight, 2) == 1.0 ? 'badge-green' : 'badge-amber' }}">
+                    {{ round($totalWeight, 2) == 1.0 ? '✓ Valid' : '⚠ Belum Valid' }}
                 </span>
             </div>
             <button @click="showCriteriaAdd=true" class="btn-primary">
@@ -284,7 +284,8 @@
                                             class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                     </button>
-                                    <form method="POST" action="{{ route('positions.criteria.destroy', [$position->id, $crit->id]) }}" onsubmit="return confirm('Hapus kriteria ini?')">
+                                    <form method="POST" action="{{ route('positions.criteria.destroy', [$position->id, $crit->id]) }}" 
+                                          @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Hapus Kriteria', message: 'Apakah Anda yakin ingin menghapus kriteria {{ addslashes($crit->name) }}?', type: 'danger', confirmBtnText: 'Ya, Hapus', callback: () => $el.submit() } }))">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -312,7 +313,7 @@
             <form action="{{ route('positions.criteria.store', $position->id) }}" method="POST" class="px-6 py-5 space-y-4">
                 @csrf
                 <div><label class="form-label">Nama Kriteria <span class="text-red-500">*</span></label><input type="text" name="name" required class="form-input" placeholder="Contoh: Kemampuan Coding"></div>
-                <div><label class="form-label">Tipe <span class="text-red-500">*</span></label><select name="type" required class="form-input"><option value="benefit">Benefit (Semakin tinggi = bagus)</option><option value="cost">Cost (Semakin rendah = bagus)</option></select></div>
+                <div><label class="form-label">Tipe <span class="text-red-500">*</span></label><select name="type" required class="form-select"><option value="benefit">Benefit (Semakin tinggi = bagus)</option><option value="cost">Cost (Semakin rendah = bagus)</option></select></div>
                 <div><label class="form-label">Bobot <span class="text-red-500">*</span></label><input type="number" name="weight" step="0.01" min="0.01" max="1.00" required class="form-input" placeholder="0.25"></div>
                 <div class="flex justify-end gap-3 pt-2 border-t border-slate-100"><button type="button" @click="showCriteriaAdd=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary">Simpan</button></div>
             </form>
@@ -327,7 +328,7 @@
             <form :action="cAction" method="POST" class="px-6 py-5 space-y-4">
                 @csrf @method('PUT')
                 <div><label class="form-label">Nama Kriteria</label><input type="text" name="name" x-model="cName" required class="form-input"></div>
-                <div><label class="form-label">Tipe</label><select name="type" x-model="cType" required class="form-input"><option value="benefit">Benefit</option><option value="cost">Cost</option></select></div>
+                <div><label class="form-label">Tipe</label><select name="type" x-model="cType" required class="form-select"><option value="benefit">Benefit</option><option value="cost">Cost</option></select></div>
                 <div><label class="form-label">Bobot</label><input type="number" name="weight" step="0.01" x-model="cWeight" required class="form-input"></div>
                 <div class="flex justify-end gap-3 pt-2 border-t border-slate-100"><button type="button" @click="showCriteriaEdit=false" class="btn-secondary">Batal</button><button type="submit" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 2px 8px rgba(245,158,11,0.3);">Update</button></div>
             </form>
@@ -362,7 +363,7 @@
                 <div><label class="form-label">Email</label><input type="email" name="email" x-model="kEmail" required class="form-input"></div>
                 <div>
                     <label class="form-label">Status Pipeline</label>
-                    <select name="status" x-model="kStatus" required class="form-input">
+                    <select name="status" x-model="kStatus" required class="form-select">
                         <option value="berkas">1. Seleksi Berkas</option>
                         <option value="tes_praktis">2. Tes Praktis</option>
                         <option value="wawancara_hr">3. Wawancara HR</option>

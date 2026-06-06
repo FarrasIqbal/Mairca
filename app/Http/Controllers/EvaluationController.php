@@ -16,8 +16,14 @@ class EvaluationController extends Controller
         // Tentukan interview_type berdasarkan role user
         $interviewType = ($user->role === 'hr') ? 'hr' : 'user';
 
-        // Ambil daftar posisi yang aktif untuk filter dropdown
-        $positions = Position::where('is_active', true)->get();
+        // Ambil daftar posisi yang aktif untuk filter dropdown, batasi jika user adalah reviewer
+        if ($user->role === 'reviewer') {
+            $positions = Position::where('is_active', true)
+                ->where('department', $user->department)
+                ->get();
+        } else {
+            $positions = Position::where('is_active', true)->get();
+        }
 
         $selectedPosition = null;
         $candidates       = collect();
@@ -26,6 +32,12 @@ class EvaluationController extends Controller
 
         if ($request->has('position_id') && $request->position_id != '') {
             $selectedPosition = Position::findOrFail($request->position_id);
+
+            // Validasi hak akses reviewer ke departemen posisi tersebut
+            if ($user->role === 'reviewer' && $selectedPosition->department !== $user->department) {
+                return redirect()->route('evaluations.index')->with('error', 'Anda tidak memiliki hak akses untuk menilai posisi di departemen lain.');
+            }
+
             $criteria         = $selectedPosition->criteria;
 
             // Tarik kandidat yang statusnya 'evaluasi_spk'
@@ -59,9 +71,23 @@ class EvaluationController extends Controller
         $scores        = $request->input('scores');
         $interviewType = $request->input('interview_type', 'hr');
         $userId        = Auth::id();
+        $user          = Auth::user();
 
         if (!$scores) {
             return redirect()->back()->with('error', 'Tidak ada data yang diproses.');
+        }
+
+        // Validasi hak akses reviewer ke departemen kandidat
+        if ($user->role === 'reviewer') {
+            $candidateIds = array_keys($scores);
+            $unauthorized = \App\Models\Candidate::whereIn('id', $candidateIds)
+                ->whereHas('position', function($q) use ($user) {
+                    $q->where('department', '!=', $user->department);
+                })->exists();
+
+            if ($unauthorized) {
+                return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menilai kandidat di departemen lain.');
+            }
         }
 
         foreach ($scores as $candidateId => $criteriaScores) {

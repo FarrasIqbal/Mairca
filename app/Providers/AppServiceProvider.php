@@ -11,7 +11,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (basename(base_path()) === 'mairca-core') {
+            $this->app->usePublicPath(dirname(base_path()));
+        }
     }
 
     /**

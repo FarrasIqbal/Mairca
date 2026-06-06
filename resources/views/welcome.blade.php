@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>MAIRCA ATS - Ultimate Education</title>
+        <link rel="icon" type="image/webp" href="{{ asset('assets/logo-ue.webp') }}">
 
         <!-- Google Fonts Inter -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,14 +64,10 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
                 <!-- Logo & Brand -->
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-blue-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                    </div>
-                    <div>
+                    <img src="{{ asset('assets/logo-ue.webp') }}" alt="Ultimate Education Logo" class="h-10 w-auto object-contain bg-white rounded-xl px-3 py-1.5 shadow-md">
+                    <div class="h-6 w-px bg-slate-700/80 mx-1 hidden sm:block"></div>
+                    <div class="hidden sm:block">
                         <span class="font-outfit font-black text-xl bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">MAIRCA <span class="text-indigo-400">ATS</span></span>
-                        <span class="block text-[9px] text-slate-400 tracking-wider font-semibold uppercase">Ultimate Education</span>
                     </div>
                 </div>
 
@@ -83,14 +80,9 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="px-4 py-2 text-sm font-semibold text-slate-300 hover:text-white transition-colors">
-                                Masuk (Login)
+                            <a href="{{ route('login') }}" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition-all border border-slate-700/80 hover:border-slate-600 shadow-md">
+                                Login
                             </a>
-                            @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-sm transition-all border border-slate-700/80 hover:border-slate-600 shadow-md">
-                                    Daftar Akun
-                                </a>
-                            @endif
                         @endauth
                     @endif
                 </div>

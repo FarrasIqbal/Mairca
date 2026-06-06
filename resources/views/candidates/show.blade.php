@@ -59,7 +59,8 @@
                     Ubah Status
                 </button>
 
-                <form action="{{ route('candidates.destroy', $candidate->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kandidat ini dari sistem? Semua data relasi (skor, log, wawancara) akan ikut dihapus.');">
+                <form action="{{ route('candidates.destroy', $candidate->id) }}" method="POST" 
+                      @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Hapus Kandidat', message: 'Apakah Anda yakin ingin menghapus kandidat ini dari sistem? Semua data relasi (skor, log, wawancara) akan ikut dihapus.', type: 'danger', confirmBtnText: 'Ya, Hapus', callback: () => $el.submit() } }))">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn-danger py-2.5 px-4 rounded-xl flex items-center gap-2 text-xs font-bold shadow-sm">
@@ -282,7 +283,8 @@
                         </button>
                     </form>
 
-                    <form action="{{ route('candidates.update', $candidate->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menolak kandidat ini?');">
+                    <form action="{{ route('candidates.update', $candidate->id) }}" method="POST" 
+                          @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Tolak Kandidat', message: 'Apakah Anda yakin ingin menolak kandidat ini?', type: 'danger', confirmBtnText: 'Ya, Tolak', callback: () => $el.submit() } }))">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="position_id" value="{{ $candidate->position_id }}">

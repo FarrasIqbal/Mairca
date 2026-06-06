@@ -24,6 +24,12 @@ class AdminPracticalTestController extends Controller
         $candidatesQuery = Candidate::with(['position', 'practicalTest'])
             ->where('status', 'tes_praktis');
 
+        if ($user->role === 'reviewer') {
+            $candidatesQuery->whereHas('position', function($q) use ($user) {
+                $q->where('department', $user->department);
+            });
+        }
+
         if ($request->filled('search')) {
             $candidatesQuery->where('name', 'like', '%' . $request->search . '%');
         }
@@ -31,7 +37,14 @@ class AdminPracticalTestController extends Controller
         $candidates = $candidatesQuery->latest()->get();
 
         // 2. Fetch positions and their custom questions
-        $positions = Position::where('is_active', true)->with('testQuestions')->get();
+        if ($user->role === 'reviewer') {
+            $positions = Position::where('is_active', true)
+                ->where('department', $user->department)
+                ->with('testQuestions')
+                ->get();
+        } else {
+            $positions = Position::where('is_active', true)->with('testQuestions')->get();
+        }
 
         // Active position selected for managing questions
         $activePositionId = $request->input('position_id', $positions->first()->id ?? null);
@@ -89,6 +102,12 @@ class AdminPracticalTestController extends Controller
     public function evaluate(Candidate $candidate)
     {
         $candidate->load(['position', 'practicalTest']);
+        $user = Auth::user();
+
+        if ($user->role === 'reviewer' && ($candidate->position->department ?? '') !== $user->department) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk menilai kandidat di departemen lain.');
+        }
+
         $test = $candidate->ensurePracticalTest();
 
         if (!$test->submitted_at) {
@@ -182,6 +201,11 @@ class AdminPracticalTestController extends Controller
             'reviewer_notes' => 'nullable|string',
             'status' => 'required|in:wawancara_hr,rejected,tes_praktis',
         ]);
+
+        $user = Auth::user();
+        if ($user->role === 'reviewer' && ($candidate->position->department ?? '') !== $user->department) {
+            return back()->with('error', 'Anda tidak memiliki hak akses untuk menilai kandidat di departemen lain.');
+        }
 
         $test = $candidate->ensurePracticalTest();
 

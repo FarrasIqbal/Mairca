@@ -12,16 +12,33 @@ class UserManagementController extends Controller
     public function index()
     {
         $users = User::orderBy('name')->paginate(15);
-        return view('users.index', compact('users'));
+        
+        $existingDepartments = \App\Models\Position::select('department')
+            ->whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->pluck('department')
+            ->merge(
+                User::select('department')
+                    ->whereNotNull('department')
+                    ->where('department', '!=', '')
+                    ->distinct()
+                    ->pluck('department')
+            )
+            ->unique()
+            ->values();
+
+        return view('users.index', compact('users', 'existingDepartments'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|max:255|unique:users',
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role'     => 'required|in:hr,reviewer',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|string|email|max:255|unique:users',
+            'password'   => ['required', 'confirmed', Rules\Password::defaults()],
+            'role'       => 'required|in:hr,reviewer',
+            'department' => 'nullable|string|max:100',
         ], [
             'name.required'     => 'Nama wajib diisi.',
             'email.required'    => 'Email wajib diisi.',
@@ -31,10 +48,11 @@ class UserManagementController extends Controller
         ]);
 
         User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => Hash::make($request->password),
-            'role'     => $request->role,
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'password'   => Hash::make($request->password),
+            'role'       => $request->role,
+            'department' => $request->role === 'reviewer' ? $request->department : null,
         ]);
 
         return redirect()->route('users.index')
@@ -44,15 +62,17 @@ class UserManagementController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'role'  => 'required|in:hr,reviewer',
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'role'       => 'required|in:hr,reviewer',
+            'department' => 'nullable|string|max:100',
         ]);
 
         $user->update([
-            'name'  => $request->name,
-            'email' => $request->email,
-            'role'  => $request->role,
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'role'       => $request->role,
+            'department' => $request->role === 'reviewer' ? $request->department : null,
         ]);
 
         if ($request->filled('password')) {

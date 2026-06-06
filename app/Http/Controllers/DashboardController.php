@@ -67,6 +67,12 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        // === Kandidat yang Diterima ===
+        $acceptedCandidates = Candidate::with('position')
+            ->where('status', 'hired')
+            ->orderByDesc('updated_at')
+            ->get();
+
         // === Chart Data: Kandidat per Posisi ===
         $positionBreakdown = Position::withCount('candidates')
             ->where('is_active', true)
@@ -101,6 +107,7 @@ class DashboardController extends Controller
             'todaySchedules',
             'upcomingSchedules',
             'recentCandidates',
+            'acceptedCandidates',
             'positionBreakdown',
             'hiringTrend',
             'submittedTests'

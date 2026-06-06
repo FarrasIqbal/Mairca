@@ -8,7 +8,8 @@
     editEmail: '',
     editPhone: '',
     editPosition: '',
-    editStatus: ''
+    editStatus: '',
+    selectedIds: []
 }" class="space-y-5">
 
     {{-- ── HEADER ROW ── --}}
@@ -68,6 +69,29 @@
         @endforeach
     </div>
 
+    {{-- ── BULK EDIT BAR ── --}}
+    <div x-show="selectedIds.length > 0" x-transition x-cloak class="p-4 rounded-2xl border border-indigo-100 dark:border-indigo-900/40 bg-indigo-50/30 dark:bg-indigo-950/25 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-600 dark:bg-indigo-500 animate-pulse"></span>
+            <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <span x-text="selectedIds.length" class="font-black text-indigo-600 dark:text-indigo-400"></span> kandidat terpilih untuk diedit massal
+            </p>
+        </div>
+        <form method="POST" action="{{ route('candidates.bulkUpdateStatus') }}" class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            @csrf
+            <input type="hidden" name="ids" :value="selectedIds.join(',')">
+            <select name="status" required class="form-select text-xs py-1.5 px-3 w-full sm:w-48">
+                <option value="">— Ubah Status Ke —</option>
+                @foreach($statuses as $val => $label)
+                <option value="{{ $val }}">{{ $label }}</option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn-primary text-xs py-2 px-4 w-full sm:w-auto">
+                Update Status Massal
+            </button>
+        </form>
+    </div>
+
     {{-- ── TABLE ── --}}
     <div class="data-card">
         @if($candidates->isEmpty())
@@ -86,6 +110,9 @@
             <table class="w-full data-table">
                 <thead>
                     <tr>
+                        <th class="w-12 text-center">
+                            <input type="checkbox" @change="if ($event.target.checked) { selectedIds = [@foreach($candidates as $k)'{{ $k->id }}',@endforeach] } else { selectedIds = [] }" :checked="selectedIds.length === {{ $candidates->count() }} && {{ $candidates->count() }} > 0" class="rounded border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                        </th>
                         <th>Kandidat</th>
                         <th>Posisi</th>
                         <th>Status</th>
@@ -104,6 +131,9 @@
                         $nextInterview = $k->interviewSchedules()->where('status','scheduled')->orderBy('scheduled_at')->first();
                     @endphp
                     <tr>
+                        <td class="text-center">
+                            <input type="checkbox" :value="'{{ $k->id }}'" x-model="selectedIds" class="rounded border-slate-300 dark:border-slate-700 dark:bg-slate-900 text-indigo-600 focus:ring-indigo-500">
+                        </td>
                         <td>
                             <div class="flex items-center gap-3">
                                 <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
@@ -139,21 +169,22 @@
                             <div class="flex items-center justify-end gap-1">
                                 @if($k->resume_path)
                                 <a href="{{ route('candidates.resume', $k->id) }}"
-                                   class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Download Resume">
+                                   class="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-all" title="Download Resume">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                                 </a>
                                 @endif
                                 <a href="{{ route('interviews.create', ['candidate_id'=>$k->id]) }}"
-                                   class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Jadwalkan Wawancara">
+                                   class="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/40 rounded-lg transition-all" title="Jadwalkan Wawancara">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                                 </a>
                                 <button @click="showEdit=true; editAction='/candidates/{{ $k->id }}'; editName='{{ addslashes($k->name) }}'; editEmail='{{ $k->email }}'; editPhone='{{ $k->phone }}'; editPosition='{{ $k->position_id }}'; editStatus='{{ $k->status }}'"
-                                        class="p-2 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-all" title="Edit">
+                                        class="p-2 text-slate-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/40 rounded-lg transition-all" title="Edit">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                 </button>
-                                <form method="POST" action="{{ route('candidates.destroy', $k->id) }}" onsubmit="return confirm('Hapus kandidat ini?')">
+                                <form method="POST" action="{{ route('candidates.destroy', $k->id) }}" 
+                                      @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Hapus Kandidat', message: 'Apakah Anda yakin ingin menghapus kandidat {{ addslashes($k->name) }}?', type: 'danger', confirmBtnText: 'Ya, Hapus', callback: () => $el.submit() } }))">
                                     @csrf @method('DELETE')
-                                    <button type="submit" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Hapus">
+                                    <button type="submit" class="p-2 text-slate-400 hover:text-red-600 dark:hover:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-950/30 rounded-lg transition-all" title="Hapus">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     </button>
                                 </form>

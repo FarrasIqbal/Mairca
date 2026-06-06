@@ -165,6 +165,44 @@ class CandidateController extends Controller
         return Storage::disk('public')->download($candidate->resume_path, $fileName);
     }
 
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids'    => 'required|string',
+            'status' => 'required|in:berkas,tes_praktis,wawancara_hr,wawancara_user,evaluasi_spk,hired,rejected',
+        ]);
+
+        $ids = explode(',', $request->ids);
+        $candidates = Candidate::whereIn('id', $ids)->get();
+
+        if ($candidates->isEmpty()) {
+            return back()->with('error', 'Tidak ada kandidat terpilih.');
+        }
+
+        $statusLabels = Candidate::$statuses;
+        $updatedCount = 0;
+
+        foreach ($candidates as $candidate) {
+            $oldStatus = $candidate->status;
+            if ($oldStatus !== $request->status) {
+                $candidate->update(['status' => $request->status]);
+
+                ActivityLog::create([
+                    'candidate_id' => $candidate->id,
+                    'user_id'      => Auth::id(),
+                    'action'       => 'status_changed',
+                    'description'  => 'Status diubah secara massal dari "' . ($statusLabels[$oldStatus] ?? $oldStatus) . '" ke "' . ($statusLabels[$request->status] ?? $request->status) . '" oleh ' . Auth::user()->name,
+                    'old_value'    => $oldStatus,
+                    'new_value'    => $request->status,
+                ]);
+
+                $updatedCount++;
+            }
+        }
+
+        return back()->with('success', $updatedCount . ' status kandidat berhasil diperbarui secara massal!');
+    }
+
     public function destroy(Candidate $candidate)
     {
         $candidate->delete();

@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Terima Kasih — Ultimate Education</title>
+    <link rel="icon" type="image/webp" href="{{ asset('assets/logo-ue.webp') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -14,14 +15,10 @@
     <header class="bg-white border-b border-slate-100 py-5 px-6 shadow-sm">
         <div class="max-w-4xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-tr from-indigo-500 to-violet-600 shadow-md">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-                    </svg>
-                </div>
-                <div>
-                    <h1 class="text-sm font-extrabold text-slate-900 tracking-tight leading-tight">Ultimate Education</h1>
-                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Recruitment Portal</p>
+                <img src="{{ asset('assets/logo-ue.webp') }}" alt="Ultimate Education Logo" class="h-10 w-auto object-contain">
+                <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+                <div class="hidden sm:block">
+                    <h1 class="text-sm font-extrabold text-slate-900 tracking-tight leading-tight">Recruitment Portal</h1>
                 </div>
             </div>
         </div>

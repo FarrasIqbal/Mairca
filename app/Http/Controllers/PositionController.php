@@ -14,7 +14,23 @@ class PositionController extends Controller
     public function index()
     {
         $positions = Position::withCount(['criteria', 'candidates'])->latest()->paginate(10);
-        return view('positions.index', compact('positions'));
+        
+        $existingDepartments = Position::select('department')
+            ->whereNotNull('department')
+            ->where('department', '!=', '')
+            ->distinct()
+            ->pluck('department')
+            ->merge(
+                \App\Models\User::select('department')
+                    ->whereNotNull('department')
+                    ->where('department', '!=', '')
+                    ->distinct()
+                    ->pluck('department')
+            )
+            ->unique()
+            ->values();
+
+        return view('positions.index', compact('positions', 'existingDepartments'));
     }
 
     // ================= ACTION SENTRAL: POSITION CONTROL CENTER =================
@@ -56,15 +72,29 @@ class PositionController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|string|max:255|unique:positions,name']);
-        Position::create(['name' => $request->name, 'is_active' => $request->has('is_active')]);
+        $request->validate([
+            'name'       => 'required|string|max:255|unique:positions,name',
+            'department' => 'required|string|max:100',
+        ]);
+        Position::create([
+            'name'       => $request->name,
+            'department' => $request->department,
+            'is_active'  => $request->has('is_active'),
+        ]);
         return redirect()->route('positions.index')->with('success', 'Posisi berhasil ditambahkan!');
     }
 
     public function update(Request $request, Position $position)
     {
-        $request->validate(['name' => 'required|string|max:255|unique:positions,name,' . $position->id]);
-        $position->update(['name' => $request->name, 'is_active' => $request->has('is_active')]);
+        $request->validate([
+            'name'       => 'required|string|max:255|unique:positions,name,' . $position->id,
+            'department' => 'required|string|max:100',
+        ]);
+        $position->update([
+            'name'       => $request->name,
+            'department' => $request->department,
+            'is_active'  => $request->has('is_active'),
+        ]);
         return redirect()->route('positions.index')->with('success', 'Posisi berhasil diperbarui!');
     }
 

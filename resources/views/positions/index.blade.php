@@ -6,6 +6,7 @@
             showEditModal: false,
             editFormAction: '',
             editName: '',
+            editDepartment: '',
             editIsActive: false
         }">
 
@@ -32,6 +33,7 @@
                         <tr>
                             <th class="w-16">No</th>
                             <th>Nama Posisi</th>
+                            <th>Departemen</th>
                             <th class="text-center">Status</th>
                             <th class="text-center">Jumlah Kriteria</th>
                             <th class="text-center">Jumlah Kandidat</th>
@@ -46,6 +48,9 @@
                                     <a href="{{ route('positions.show', $position->id) }}" class="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
                                         {{ $position->name }}
                                     </a>
+                                </td>
+                                <td class="font-medium text-slate-700 dark:text-slate-300">
+                                    {{ $position->department ?? '—' }}
                                 </td>
                                 <td class="text-center">
                                     @if($position->is_active)
@@ -67,13 +72,14 @@
                                             Kriteria
                                         </a>
 
-                                        <button @click="showEditModal = true; editFormAction = '{{ route('positions.update', $position->id) }}'; editName = '{{ addslashes($position->name) }}'; editIsActive = {{ $position->is_active ? 'true' : 'false' }}"
+                                        <button @click="showEditModal = true; editFormAction = '{{ route('positions.update', $position->id) }}'; editName = '{{ addslashes($position->name) }}'; editDepartment = '{{ addslashes($position->department) }}'; editIsActive = {{ $position->is_active ? 'true' : 'false' }}"
                                             class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors">
                                             <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                                             Edit
                                         </button>
 
-                                        <form action="{{ route('positions.destroy', $position->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Yakin ingin menghapus posisi ini? Kriteria yang terikat juga akan terhapus.');">
+                                        <form action="{{ route('positions.destroy', $position->id) }}" method="POST" class="inline-block" 
+                                              @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Hapus Posisi', message: 'Apakah Anda yakin ingin menghapus posisi {{ addslashes($position->name) }}? Kriteria yang terikat juga akan terhapus.', type: 'danger', confirmBtnText: 'Ya, Hapus', callback: () => $el.submit() } }))">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="inline-flex items-center px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">
@@ -135,6 +141,10 @@
                             <label for="name" class="form-label">Nama Posisi</label>
                             <input type="text" name="name" id="name" required placeholder="Contoh: Software Engineer" class="form-input w-full mt-1">
                         </div>
+                        <div>
+                            <label for="department" class="form-label">Departemen</label>
+                            <input type="text" name="department" id="department" list="existing-departments" required placeholder="Contoh: SEO, IT, Marketing" class="form-input w-full mt-1">
+                        </div>
                         <div class="flex items-center gap-3">
                             <input type="checkbox" name="is_active" id="is_active" value="1" checked class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                             <label for="is_active" class="text-sm font-medium text-slate-700">Status Aktif</label>
@@ -180,6 +190,10 @@
                             <label for="edit_name" class="form-label">Nama Posisi</label>
                             <input type="text" name="name" id="edit_name" x-model="editName" required class="form-input w-full mt-1">
                         </div>
+                        <div>
+                            <label for="edit_department" class="form-label">Departemen</label>
+                            <input type="text" name="department" id="edit_department" x-model="editDepartment" list="existing-departments" required class="form-input w-full mt-1">
+                        </div>
                         <div class="flex items-center gap-3">
                             <input type="checkbox" name="is_active" id="edit_is_active" value="1" x-model="editIsActive" class="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                             <label for="edit_is_active" class="text-sm font-medium text-slate-700">Status Aktif</label>
@@ -197,6 +211,13 @@
                 </form>
             </div>
         </div>
+
+        {{-- Datalist untuk Autocomplete Departemen --}}
+        <datalist id="existing-departments">
+            @foreach($existingDepartments as $dept)
+                <option value="{{ $dept }}">
+            @endforeach
+        </datalist>
 
     </div>
 

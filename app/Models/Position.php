@@ -9,7 +9,7 @@ class Position extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_active', 'test_duration'];
+    protected $fillable = ['name', 'is_active', 'test_duration', 'department'];
 
     public function criteria()
     {

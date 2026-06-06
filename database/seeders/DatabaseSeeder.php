@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'HRD Ultimate Education',
                 'password' => Hash::make('password123'),
                 'role' => 'hr',
+                'department' => 'HR',
             ]
         );
 
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Lead SEO Divison',
                 'password' => Hash::make('password123'),
                 'role' => 'reviewer',
+                'department' => 'SEO',
             ]
         );
 
@@ -39,6 +41,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Lead IT Division',
                 'password' => Hash::make('password123'),
                 'role' => 'reviewer',
+                'department' => 'IT',
             ]
         );
     }

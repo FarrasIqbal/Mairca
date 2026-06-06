@@ -218,7 +218,8 @@
                         </button>
                     </form>
 
-                    <form action="{{ route('candidates.update', $candidate->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menolak kandidat ini?')">
+                    <form action="{{ route('candidates.update', $candidate->id) }}" method="POST" 
+                          @submit.prevent="window.dispatchEvent(new CustomEvent('confirm-modal', { detail: { title: 'Tolak Kandidat', message: 'Apakah Anda yakin ingin menolak kandidat ini?', type: 'danger', confirmBtnText: 'Ya, Tolak', callback: () => $el.submit() } }))">
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="position_id" value="{{ $candidate->position_id }}">
@@ -234,6 +235,82 @@
                 </div>
             </div>
             @endforeach
+        </div>
+        @endif
+    </div>
+
+    {{-- ── KANDIDAT YANG DITERIMA ── --}}
+    <div class="data-card">
+        <div class="card-header">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-tr from-emerald-500 to-green-600 shadow-md shadow-emerald-500/20 border border-emerald-400/10">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="card-title">Kandidat Terpilih & Diterima (Hired)</p>
+                    <p class="text-xs text-slate-400 mt-0.5">Daftar kandidat yang telah lolos seluruh tahapan rekrutmen dan resmi diterima</p>
+                </div>
+            </div>
+        </div>
+
+        @if($acceptedCandidates->isEmpty())
+        <div class="py-10 text-center">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-800 shadow-inner">
+                <svg class="w-6 h-6 text-slate-300 dark:text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <p class="text-xs font-bold text-slate-500">Belum ada kandidat yang diterima</p>
+            <p class="text-[11px] text-slate-400 mt-1 max-w-md mx-auto leading-relaxed">
+                Tentukan keputusan rekrutmen pada tab Laporan MAIRCA atau halaman Manajemen Kandidat untuk melihat hasil rekrutmen di sini.
+            </p>
+        </div>
+        @else
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                    <tr class="bg-slate-50 dark:bg-slate-800/50">
+                        <th class="p-3.5 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">Nama Kandidat</th>
+                        <th class="p-3.5 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">Posisi Lowongan</th>
+                        <th class="p-3.5 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">Departemen</th>
+                        <th class="p-3.5 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Tanggal Diterima</th>
+                        <th class="p-3.5 font-bold text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800 text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($acceptedCandidates as $c)
+                    <tr class="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50/30 transition-colors">
+                        <td class="p-3.5">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0 bg-gradient-to-tr from-emerald-500 to-teal-500 shadow-sm">
+                                    {{ strtoupper(substr($c->name, 0, 1)) }}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-slate-800 dark:text-slate-200">{{ $c->name }}</p>
+                                    <p class="text-[10px] text-slate-400 mt-0.5">{{ $c->email }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-3.5 text-slate-600 dark:text-slate-400 font-medium">{{ $c->position->name ?? '—' }}</td>
+                        <td class="p-3.5">
+                            @if($c->position && $c->position->department)
+                                <span class="px-2 py-1 text-[10px] font-bold rounded-lg bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30">
+                                    {{ strtoupper($c->position->department) }}
+                                </span>
+                            @else
+                                <span class="text-slate-400">—</span>
+                            @endif
+                        </td>
+                        <td class="p-3.5 text-center text-slate-500 dark:text-slate-400 font-mono">{{ $c->updated_at->translatedFormat('d M Y') }}</td>
+                        <td class="p-3.5 text-center">
+                            <span class="badge badge-green shadow-sm">✓ Diterima</span>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
         @endif
     </div>

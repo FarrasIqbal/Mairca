@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
     // Evaluasi / Penilaian
     Route::get('/evaluations', [EvaluationController::class, 'index'])->name('evaluations.index');
     Route::post('/evaluations/bulk', [EvaluationController::class, 'storeBulk'])->name('evaluations.storeBulk');
+    Route::get('/rankings', [RankingController::class, 'index'])->name('rankings.index');
 
     // Manajemen Tes Praktis (HR & Reviewer)
     Route::get('/admin/practical-tests', [AdminPracticalTestController::class, 'index'])->name('admin.practical-tests.index');
@@ -49,9 +50,9 @@ Route::middleware('auth')->group(function () {
 
         Route::resource('positions', PositionController::class);
         Route::resource('positions.criteria', CriteriaController::class)->except(['show']);
+        Route::post('/candidates/bulk-update-status', [CandidateController::class, 'bulkUpdateStatus'])->name('candidates.bulkUpdateStatus');
         Route::resource('candidates', CandidateController::class)->except(['create', 'edit']);
         Route::get('/candidates/{candidate}/resume', [CandidateController::class, 'downloadResume'])->name('candidates.resume');
-        Route::get('/rankings', [RankingController::class, 'index'])->name('rankings.index');
         Route::resource('users', UserManagementController::class)->except(['show', 'create', 'edit']);
     });
 });
