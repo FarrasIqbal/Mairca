@@ -253,9 +253,26 @@
                         <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs font-semibold">1</span>
                         Langkah 1: Mengumpulkan Nilai Evaluasi (Matriks Keputusan X) & Batas Min-Max
                     </h4>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                        <p><strong>Apa artinya?</strong> Di tahap pertama ini, sistem mengumpulkan semua nilai rata-rata yang diberikan oleh para penilai untuk masing-masing kriteria kandidat.</p>
-                        <p><strong>Batas Min-Max:</strong> Nilai tertinggi (Maksimum) dan terendah (Minimum) pada masing-masing kolom kriteria dicari untuk digunakan sebagai tolok ukur pembanding di langkah berikutnya.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                        <div class="md:col-span-2 space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                            <p><strong>Apa artinya?</strong> Di tahap pertama ini, sistem mengumpulkan semua nilai rata-rata yang diberikan oleh para penilai untuk masing-masing kriteria kandidat, membentuk Matriks Keputusan (X).</p>
+                            <p><strong>Batas Min-Max:</strong> Nilai tertinggi (Maksimum) dan terendah (Minimum) pada masing-masing kolom kriteria dicari untuk digunakan sebagai tolok ukur pembanding di langkah berikutnya.</p>
+                        </div>
+                        <div class="flex flex-col justify-center bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm font-mono text-xs">
+                            <div class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider mb-2">Rumus Batas Min-Max</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-indigo-600 dark:text-indigo-400 font-bold">x<sub>j</sub><sup>+</sup></span>
+                                    <span class="text-slate-400 dark:text-slate-600">=</span>
+                                    <span class="text-slate-800 dark:text-slate-200">max(x<sub>ij</sub>)</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-rose-600 dark:text-rose-400 font-bold">x<sub>j</sub><sup>-</sup></span>
+                                    <span class="text-slate-400 dark:text-slate-600">=</span>
+                                    <span class="text-slate-800 dark:text-slate-200">min(x<sub>ij</sub>)</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
                         <table class="w-full text-left border-collapse text-xs">
@@ -308,9 +325,29 @@
                         <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs font-semibold">2</span>
                         Langkah 2: Menghitung Nilai Harapan Ideal (Matriks Evaluasi Teoretis Tp)
                     </h4>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                        <p><strong>Apa artinya?</strong> Kita berasumsi bahwa semua kandidat di awal memiliki peluang yang sama besar untuk dipilih (Probabilitas = 1 dibagi jumlah kandidat).</p>
-                        <p>Nilai Harapan Ideal dihitung dengan mengalikan bobot kriteria dengan probabilitas ini. Ini adalah standar nilai acuan awal yang adil bagi seluruh peserta.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                        <div class="md:col-span-2 space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                            <p><strong>Apa artinya?</strong> Kita berasumsi bahwa semua alternatif/kandidat memiliki peluang awal yang sama besar untuk terpilih (Probabilitas P<sub>a<sub>i</sub></sub> = 1 dibagi jumlah kandidat).</p>
+                            <p><strong>Nilai Harapan Ideal (T<sub>p</sub>):</strong> Dihitung dengan mengalikan bobot kriteria w<sub>j</sub> dengan probabilitas awal P<sub>a<sub>i</sub></sub>. Ini adalah standar nilai acuan awal yang adil bagi seluruh peserta.</p>
+                        </div>
+                        <div class="flex flex-col justify-center bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm font-mono text-xs">
+                            <div class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider mb-2">Rumus Nilai Harapan</div>
+                            <div class="space-y-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-800 dark:text-slate-200">P<sub>a<sub>i</sub></sub></span>
+                                    <span class="text-slate-400 dark:text-slate-600">=</span>
+                                    <div class="flex flex-col items-center justify-center">
+                                        <span class="border-b border-slate-400 dark:border-slate-600 px-2 pb-0.5">1</span>
+                                        <span class="pt-0.5">m</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-indigo-600 dark:text-indigo-400">t<sub>p<sub>ij</sub></sub></span>
+                                    <span class="text-slate-400 dark:text-slate-600">=</span>
+                                    <span class="text-slate-800 dark:text-slate-200">P<sub>a<sub>i</sub></sub> &times; w<sub>j</sub></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
                         <table class="w-full text-left border-collapse text-xs">
@@ -344,8 +381,44 @@
                         <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs font-semibold">3</span>
                         Langkah 3: Menghitung Capaian Riil Peserta (Matriks Evaluasi Riil Tr)
                     </h4>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                        <p><strong>Apa artinya?</strong> Nilai asli kandidat dikonversi ke skala 0 hingga 1 menggunakan perbandingan batas Min-Max (dari Langkah 1). Tahap ini menentukan persentase capaian riil kandidat terhadap nilai harapan ideal mereka.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                        <div class="md:col-span-2 space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                            <p><strong>Apa artinya?</strong> Nilai asli kandidat (x<sub>ij</sub>) dikonversi ke skala proporsional menggunakan perbandingan batas Min-Max (dari Langkah 1). Tahap ini menentukan persentase capaian riil kandidat terhadap nilai harapan ideal (t<sub>p<sub>ij</sub></sub>).</p>
+                            <p>Perhitungannya dibedakan berdasarkan jenis kriteria:</p>
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li><strong>Benefit (Keuntungan):</strong> Semakin tinggi nilai riil kandidat, semakin mendekati nilai harapan ideal.</li>
+                                <li><strong>Cost (Biaya):</strong> Semakin rendah nilai riil kandidat, semakin mendekati nilai harapan ideal.</li>
+                            </ul>
+                        </div>
+                        <div class="flex flex-col justify-center bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm font-mono text-xs space-y-3">
+                            <div class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider">Rumus Capaian Riil (T<sub>r</sub>)</div>
+                            
+                            <div>
+                                <div class="text-[9px] font-sans text-slate-400 mb-1">Kriteria Benefit:</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-800 dark:text-slate-200">t<sub>r<sub>ij</sub></sub></span>
+                                    <span class="text-slate-400 dark:text-slate-600">=</span>
+                                    <span class="text-slate-850 dark:text-slate-200">t<sub>p<sub>ij</sub></sub> &times;</span>
+                                    <div class="flex flex-col items-center justify-center">
+                                        <span class="border-b border-slate-400 dark:border-slate-600 px-2 pb-0.5">x<sub>ij</sub> - x<sub>j</sub><sup>-</sup></span>
+                                        <span class="pt-0.5">x<sub>j</sub><sup>+</sup> - x<sub>j</sub><sup>-</sup></span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2 border-t border-dashed border-slate-200 dark:border-slate-800">
+                                <div class="text-[9px] font-sans text-slate-400 mb-1">Kriteria Cost:</div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-slate-800 dark:text-slate-200">t<sub>r<sub>ij</sub></sub></span>
+                                    <span class="text-slate-400 dark:text-slate-600">=</span>
+                                    <span class="text-slate-850 dark:text-slate-200">t<sub>p<sub>ij</sub></sub> &times;</span>
+                                    <div class="flex flex-col items-center justify-center">
+                                        <span class="border-b border-slate-400 dark:border-slate-600 px-2 pb-0.5">x<sub>j</sub><sup>+</sup> - x<sub>ij</sub></span>
+                                        <span class="pt-0.5">x<sub>j</sub><sup>+</sup> - x<sub>j</sub><sup>-</sup></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
                         <table class="w-full text-left border-collapse text-xs">
@@ -381,9 +454,21 @@
                         <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs font-semibold">4</span>
                         Langkah 4: Menghitung Selisih / Kesenjangan Nilai (Matriks Gap G)
                     </h4>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                        <p><strong>Apa artinya?</strong> Kami menghitung selisih (gap) antara nilai harapan ideal teoretis (Langkah 2) dan capaian riil (Langkah 3).</p>
-                        <p><strong>Prinsip Utama:</strong> Semakin kecil nilai selisih/gap ini, berarti kemampuan riil kandidat tersebut semakin dekat dengan standar ideal yang diharapkan perusahaan.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                        <div class="md:col-span-2 space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                            <p><strong>Apa artinya?</strong> Kami menghitung selisih (gap) antara nilai harapan ideal teoretis t<sub>p<sub>ij</sub></sub> (Langkah 2) dan capaian riil t<sub>r<sub>ij</sub></sub> (Langkah 3).</p>
+                            <p><strong>Prinsip Utama:</strong> Semakin kecil nilai selisih/gap ini, berarti kemampuan riil kandidat tersebut semakin dekat dengan standar ideal yang diharapkan perusahaan. Jika nilai riil sama dengan nilai ideal teoretis, maka gap akan bernilai 0 (sempurna).</p>
+                        </div>
+                        <div class="flex flex-col justify-center bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm font-mono text-xs">
+                            <div class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider mb-2">Rumus Matriks Gap (G)</div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800 dark:text-slate-200">g<sub>ij</sub></span>
+                                <span class="text-slate-400 dark:text-slate-600">=</span>
+                                <span class="text-indigo-650 dark:text-indigo-400">t<sub>p<sub>ij</sub></sub></span>
+                                <span class="text-slate-400 dark:text-slate-600">-</span>
+                                <span class="text-slate-800 dark:text-slate-200">t<sub>r<sub>ij</sub></sub></span>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
                         <table class="w-full text-left border-collapse text-xs">
@@ -419,9 +504,26 @@
                         <span class="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs font-semibold">5</span>
                         Langkah 5: Penjumlahan Total Kesenjangan (Skor Qi) & Perangkingan Akhir
                     </h4>
-                    <div class="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                        <p><strong>Apa artinya?</strong> Nilai kesenjangan (gap) dari seluruh kriteria dijumlahkan untuk masing-masing kandidat menjadi satu skor final, yaitu <strong>Skor Qi</strong>.</p>
-                        <p><strong>Hasil Perangkingan:</strong> Kandidat diurutkan dari skor terkecil ke terbesar. Skor terkecil (mendekati 0) ditempatkan pada ranking teratas karena mereka memiliki selisih paling sedikit dari kualifikasi ideal perusahaan.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800/50">
+                        <div class="md:col-span-2 space-y-2 text-xs text-slate-600 dark:text-slate-400">
+                            <p><strong>Apa artinya?</strong> Nilai kesenjangan (gap) g<sub>ij</sub> dari seluruh kriteria dijumlahkan untuk masing-masing kandidat menjadi satu skor final, yaitu <strong>Skor Q<sub>i</sub></strong>.</p>
+                            <p><strong>Hasil Perangkingan:</strong> Kandidat diurutkan dari skor Q<sub>i</sub> terkecil ke terbesar. Skor terkecil (mendekati 0) ditempatkan pada ranking teratas karena mereka memiliki total selisih paling sedikit dari standar ideal perusahaan.</p>
+                        </div>
+                        <div class="flex flex-col justify-center bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200/60 dark:border-slate-800/60 shadow-sm font-mono text-xs">
+                            <div class="text-[10px] font-semibold text-indigo-500 uppercase tracking-wider mb-2">Rumus Nilai Akhir (Q<sub>i</sub>)</div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-bold text-slate-800 dark:text-slate-200">Q<sub>i</sub></span>
+                                <span class="text-slate-400 dark:text-slate-600">=</span>
+                                <div class="flex items-center text-slate-800 dark:text-slate-200 font-bold">
+                                    <span class="text-lg font-sans mr-1">&sum;</span>
+                                    <div class="flex flex-col text-[8px] leading-none justify-center -mt-0.5 mr-1 text-slate-500 font-sans font-normal">
+                                        <span>n</span>
+                                        <span>j=1</span>
+                                    </div>
+                                    <span>g<sub>ij</sub></span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="overflow-x-auto border border-slate-100 dark:border-slate-800 rounded-xl">
                         <table class="w-full text-left border-collapse text-xs">
