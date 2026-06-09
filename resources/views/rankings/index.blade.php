@@ -262,13 +262,19 @@
                                 <div class="flex items-center gap-2">
                                     <span class="text-indigo-600 dark:text-indigo-400 font-bold">x<sub>j</sub><sup>+</sup></span>
                                     <span class="text-slate-400 dark:text-slate-600">=</span>
-                                    <span class="text-slate-800 dark:text-slate-200">max(x<sub>ij</sub>)</span>
+                                    <span class="text-slate-880 dark:text-slate-200">max(x<sub>ij</sub>)</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-rose-600 dark:text-rose-400 font-bold">x<sub>j</sub><sup>-</sup></span>
                                     <span class="text-slate-400 dark:text-slate-600">=</span>
-                                    <span class="text-slate-800 dark:text-slate-200">min(x<sub>ij</sub>)</span>
+                                    <span class="text-slate-880 dark:text-slate-200">min(x<sub>ij</sub>)</span>
                                 </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-[9px] text-slate-400 dark:text-slate-500 font-sans space-y-1">
+                                <div class="font-semibold text-slate-500 dark:text-slate-400">Keterangan:</div>
+                                <div>• <span class="font-mono font-bold text-indigo-500">x<sub>j</sub><sup>+</sup></span>: Nilai Maksimum kriteria j</div>
+                                <div>• <span class="font-mono font-bold text-rose-500">x<sub>j</sub><sup>-</sup></span>: Nilai Minimum kriteria j</div>
+                                <div>• <span class="font-mono">x<sub>ij</sub></span>: Nilai alternatif i pada kriteria j</div>
                             </div>
                         </div>
                     </div>
@@ -342,8 +348,15 @@
                                 <div class="flex items-center gap-2">
                                     <span class="font-bold text-indigo-600 dark:text-indigo-400">t<sub>p<sub>ij</sub></sub></span>
                                     <span class="text-slate-400 dark:text-slate-600">=</span>
-                                    <span class="text-slate-800 dark:text-slate-200">P<sub>a<sub>i</sub></sub> &times; w<sub>j</sub></span>
+                                    <span class="text-slate-880 dark:text-slate-200">P<sub>a<sub>i</sub></sub> &times; w<sub>j</sub></span>
                                 </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-[9px] text-slate-400 dark:text-slate-500 font-sans space-y-1">
+                                <div class="font-semibold text-slate-500 dark:text-slate-400">Keterangan:</div>
+                                <div>• <span class="font-mono">P<sub>a<sub>i</sub></sub></span>: Peluang awal tiap kandidat</div>
+                                <div>• <span class="font-mono">m</span>: Jumlah total kandidat</div>
+                                <div>• <span class="font-mono font-bold text-indigo-500">t<sub>p<sub>ij</sub></sub></span>: Nilai harapan teoretis</div>
+                                <div>• <span class="font-mono">w<sub>j</sub></span>: Bobot kepentingan kriteria j</div>
                             </div>
                         </div>
                     </div>
@@ -396,7 +409,7 @@
                                 <div class="flex items-center gap-2">
                                     <span class="font-bold text-slate-800 dark:text-slate-200">t<sub>r<sub>ij</sub></sub></span>
                                     <span class="text-slate-400 dark:text-slate-600">=</span>
-                                    <span class="text-slate-850 dark:text-slate-200">t<sub>p<sub>ij</sub></sub> &times;</span>
+                                    <span class="text-slate-880 dark:text-slate-200">t<sub>p<sub>ij</sub></sub> &times;</span>
                                     <div class="flex flex-col items-center justify-center">
                                         <span class="border-b border-slate-400 dark:border-slate-600 px-2 pb-0.5">x<sub>ij</sub> - x<sub>j</sub><sup>-</sup></span>
                                         <span class="pt-0.5">x<sub>j</sub><sup>+</sup> - x<sub>j</sub><sup>-</sup></span>
@@ -409,12 +422,20 @@
                                 <div class="flex items-center gap-2">
                                     <span class="font-bold text-slate-800 dark:text-slate-200">t<sub>r<sub>ij</sub></sub></span>
                                     <span class="text-slate-400 dark:text-slate-600">=</span>
-                                    <span class="text-slate-850 dark:text-slate-200">t<sub>p<sub>ij</sub></sub> &times;</span>
+                                    <span class="text-slate-880 dark:text-slate-200">t<sub>p<sub>ij</sub></sub> &times;</span>
                                     <div class="flex flex-col items-center justify-center">
                                         <span class="border-b border-slate-400 dark:border-slate-600 px-2 pb-0.5">x<sub>j</sub><sup>+</sup> - x<sub>ij</sub></span>
                                         <span class="pt-0.5">x<sub>j</sub><sup>+</sup> - x<sub>j</sub><sup>-</sup></span>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-100 dark:border-slate-800/60 text-[9px] text-slate-400 dark:text-slate-500 font-sans space-y-1">
+                                <div class="font-semibold text-slate-500 dark:text-slate-400">Keterangan:</div>
+                                <div>• <span class="font-mono font-bold">t<sub>r<sub>ij</sub></sub></span>: Nilai evaluasi riil kandidat</div>
+                                <div>• <span class="font-mono text-indigo-500">t<sub>p<sub>ij</sub></sub></span>: Nilai harapan (Langkah 2)</div>
+                                <div>• <span class="font-mono">x<sub>ij</sub></span>: Nilai asli evaluasi kandidat</div>
+                                <div>• <span class="font-mono text-rose-500">x<sub>j</sub><sup>-</sup></span> & <span class="font-mono text-indigo-500">x<sub>j</sub><sup>+</sup></span>: Batas Min & Max</div>
                             </div>
                         </div>
                     </div>
@@ -465,6 +486,12 @@
                                 <span class="text-indigo-650 dark:text-indigo-400">t<sub>p<sub>ij</sub></sub></span>
                                 <span class="text-slate-400 dark:text-slate-600">-</span>
                                 <span class="text-slate-800 dark:text-slate-200">t<sub>r<sub>ij</sub></sub></span>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-[9px] text-slate-400 dark:text-slate-500 font-sans space-y-1">
+                                <div class="font-semibold text-slate-500 dark:text-slate-400">Keterangan:</div>
+                                <div>• <span class="font-mono font-bold text-indigo-500">g<sub>ij</sub></span>: Selisih/Gap kandidat</div>
+                                <div>• <span class="font-mono text-indigo-500">t<sub>p<sub>ij</sub></sub></span>: Nilai harapan ideal</div>
+                                <div>• <span class="font-mono">t<sub>r<sub>ij</sub></sub></span>: Nilai riil capaian</div>
                             </div>
                         </div>
                     </div>
@@ -520,6 +547,13 @@
                                     </div>
                                     <span>g<sub>ij</sub></span>
                                 </div>
+                            </div>
+                            <div class="mt-3 pt-2 border-t border-slate-100 dark:border-slate-800/60 text-[9px] text-slate-400 dark:text-slate-500 font-sans space-y-1">
+                                <div class="font-semibold text-slate-500 dark:text-slate-400">Keterangan:</div>
+                                <div>• <span class="font-mono font-bold">Q<sub>i</sub></span>: Total skor akhir (Peringkat)</div>
+                                <div>• <span class="font-mono">g<sub>ij</sub></span>: Selisih/Gap per kriteria</div>
+                                <div>• <span class="font-mono">n</span>: Jumlah seluruh kriteria</div>
+                                <div class="text-[8px] italic mt-0.5 text-amber-600 dark:text-amber-500">(Qi terkecil = Terbaik)</div>
                             </div>
                         </div>
                     </div>
